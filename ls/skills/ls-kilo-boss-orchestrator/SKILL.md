@@ -3,7 +3,7 @@ name: ls-kilo-boss-orchestrator
 description: Orchestrate Kilo headless boss-worker execution with repo-local state, watchdog leases, consensus validation, and safety gates. Use when running multi-agent autonomous loops that require planning, delegation, verifier checks, and high/critical discrepancy adjudication.
 metadata:
   version: "1.0"
-compatibility: Python 3.12+, Kilo CLI 7.x, PyYAML via localsetup deps helper
+compatibility: Python 3.12+, Kilo CLI 7.x, PyYAML via the LocalSetup dependency helper
 ---
 
 # Kilo Boss Orchestrator

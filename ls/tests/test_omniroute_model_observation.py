@@ -903,7 +903,7 @@ def test_model_observation_rejects_total_source_failure_without_success_output(
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
 
     requested_paths.clear()
-    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid", "--api-key-env", ""]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == (
@@ -963,7 +963,7 @@ def test_model_observation_rejects_nonrow_list_sources_without_success_output(
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
 
     requested_paths.clear()
-    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid", "--api-key-env", ""]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == (
@@ -1027,7 +1027,7 @@ def test_model_observation_rejects_mapping_shaped_error_list_sources(
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
 
     requested_paths.clear()
-    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid", "--api-key-env", ""]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == (
@@ -1099,7 +1099,7 @@ def test_model_observation_rejects_unusable_catalog_model_lists(
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
 
     requested_paths.clear()
-    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid", "--api-key-env", ""]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == (
@@ -1385,7 +1385,7 @@ def test_model_observation_rejects_unusable_2xx_payloads_and_keeps_partial_valid
             5,
             observed_at=OBSERVED_AT,
         )
-    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid", "--api-key-env", ""]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == (

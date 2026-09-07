@@ -25,7 +25,7 @@ for parent in Path(__file__).resolve().parents:
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - environment guidance
-    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the LocalSetup source checkout.") from exc
 
 
 DEFAULT_SOURCE_REPO = "https://github.com/diegosouzapw/OmniRoute.git"
@@ -252,7 +252,7 @@ def _taxonomy_tags(repo_root: Path) -> dict[str, list[str]]:
 def read_local_skills(repo_root: Path) -> list[LocalSkill]:
     skills_root = repo_root / "ls" / "skills"
     if not skills_root.is_dir():
-        raise ConverterError(f"missing Localsetup skills root: {skills_root}")
+        raise ConverterError(f"missing LocalSetup skills root: {skills_root}")
     tags_by_skill = _taxonomy_tags(repo_root)
     rows: list[LocalSkill] = []
     for skill_md in sorted(skills_root.glob("ls-*/SKILL.md")):
@@ -313,7 +313,7 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
                         local_skill=", ".join(coverage),
                         intended_local=", ".join(coverage),
                         source_path=source.path,
-                        detail="covered by consolidated Localsetup-native OmniRoute skill",
+                        detail="covered by consolidated LocalSetup-native OmniRoute skill",
                     )
                 )
                 continue
@@ -362,7 +362,7 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
         if not source_skill and _is_omniroute_tagged(item):
             if _is_local_native(item):
                 local_role = item.omniroute.get("local_role")
-                detail = "local Localsetup-native OmniRoute skill"
+                detail = "local LocalSetup-native OmniRoute skill"
                 if isinstance(local_role, str) and local_role:
                     detail = f"{detail}: {local_role}"
                 rows.append(
@@ -509,7 +509,7 @@ def freshness_command(args: argparse.Namespace) -> int:
 
 
 def add_source_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--repo-root", default=".", help="Localsetup checkout to compare against.")
+    parser.add_argument("--repo-root", default=".", help="LocalSetup checkout to compare against.")
     parser.add_argument("--source-repo", default=DEFAULT_SOURCE_REPO, help="OmniRoute Git repository URL.")
     parser.add_argument("--source-path", help="Local OmniRoute checkout or exported skills root for offline checks.")
     parser.add_argument("--ref", default=DEFAULT_REF, help="Upstream branch, tag, or commit.")

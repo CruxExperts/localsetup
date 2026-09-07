@@ -204,7 +204,7 @@ This is the package's only authoritative framework matrix. The shared Node floor
 | Jest | 30+ | Current supported Jest major represented by the generated API |
 | Vitest | 5+ | Current Vitest major; pair with Vite 6.4+ |
 | Vite | 6.4+ | Minimum accepted by Vitest 5 |
-| Python | 3.12+ | Localsetup package runtime floor |
+| Python | 3.12+ | LocalSetup package runtime floor |
 | pytest | 9+ | Current pytest major; its upstream Python 3.10+ floor is covered by Python 3.12+ |
 | Java | 17+ | Minimum runtime for JUnit 6 |
 | JUnit | 6+ | Current JUnit generation and examples |

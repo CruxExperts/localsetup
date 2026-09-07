@@ -117,11 +117,11 @@ jobs:
       - name: Run trusted-base PR QC review
         if: steps.qc_route.outputs.route == 'trusted-base'
         env:
-          LLM_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'auto' || 'off' }}
-          QC_LLM_BASE_URL: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_BASE_URL || '' }}
-          QC_LLM_API_KEY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_API_KEY || '' }}
-          QC_LLM_ORGANIZATION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_ORGANIZATION || '' }}
-          QC_LLM_PROJECT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_PROJECT || '' }}
+          LLM_MODE: ${{ vars.QC_PR_LLM_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'auto' || 'off' }}
+          QC_LLM_BASE_URL: ${{ vars.QC_PR_LLM_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_BASE_URL || '' }}
+          QC_LLM_API_KEY: ${{ vars.QC_PR_LLM_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_API_KEY || '' }}
+          QC_LLM_ORGANIZATION: ${{ vars.QC_PR_LLM_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_ORGANIZATION || '' }}
+          QC_LLM_PROJECT: ${{ vars.QC_PR_LLM_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_PROJECT || '' }}
           QC_LLM_MODEL: ${{ vars.QC_LLM_MODEL }}
           QC_LLM_TEMPERATURE: ${{ vars.QC_LLM_TEMPERATURE }}
           QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
@@ -194,7 +194,7 @@ jobs:
               fi
             else
               echo "Tooling: trusted base checkout"
-              echo "LLM mode: repository policy"
+              echo "LLM mode: explicit repository opt-in (QC_PR_LLM_ENABLED=true)"
               echo "Route reason: ${QC_ROUTE_REASON}"
             fi
             echo

@@ -1,22 +1,22 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-docs-organization
 ---
 
 # Framework Docs Index
 
-This is the public documentation map for Localsetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
+This is the public documentation map for LocalSetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
 
 <p align="center">
-  <img src="../../assets/localsetup-architecture.png" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../../assets/localsetup-architecture.png" alt="LocalSetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.4.0`
-- Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw`
+- Current version: `4.22.6`
+- Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode, cline-cli, cline-vscode, amp-cli, goose-cli, pi-cli, hermes-agent, qwen-code-cli, kimi-cli, factory-droid, antigravity-app, gemini-cli, omp-cli`
 - Shipped skills: `103`
 - Workflow packages: `16`
 - Source: `ls/docs/_generated/facts.json`
@@ -26,10 +26,15 @@ This is the public documentation map for Localsetup. Start here when you want th
 
 | Page | What it answers |
 |---|---|
-| [Project README](../../README.md) | Why Localsetup exists and why people should use it. |
+| [Project README](../../README.md) | Why LocalSetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
+| [LSCli operations](LSCLI.md) | Explicit profiles, offline runtime/command setup, protected coding, sessions, recovery, branches, compaction and tool-free completion. |
+| [LSCli runtime contracts](LSCLI_RUNTIME.md) | Grants, disclosure, sandbox resources, broker protocols, durable evidence and completion schemas. |
+| [LSCli candidate qualification](LSCLI_QUALIFICATION.md) | Historical installed-artifact scenarios and their host/provider limits, separate from final published-release acceptance. |
+| [SDK source ownership](SDK_FORK.md) | Private SDK payload, upstream provenance, dependency locks and artifact/SBOM verification. |
+| [Client integration metadata](CLIENT_INTEGRATION_METADATA.md) | Distinguish lifecycle, installation guidance, catalog support, and qualification evidence. |
 | [Deterministic client state](CLIENT_STATE.md) | Resolve client state, allocate private artifacts, and verify restart bindings. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |
 | [Shipped skills catalog](SKILLS.md) | All shipped skills with IDs, versions, and descriptions. |
@@ -38,12 +43,13 @@ This is the public documentation map for Localsetup. Start here when you want th
 | [Workflow package standard](WORKFLOW_STANDARD.md) | Rules for first-class workflow packages and `workflow.yaml`. |
 | [Platform registry](PLATFORM_REGISTRY.md) | Canonical platform IDs, paths, and adapter rules. |
 | [Adapter ownership](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership rules for install, repair, verify, detach, rollback, and migration planning. |
+| [Product naming and branding](BRANDING.md) | Display names, preserved technical identifiers, exact exceptions, and visual review evidence. |
 | [Multi-platform install](MULTI_PLATFORM_INSTALL.md) | Detailed install behavior and options. |
-| [Harness automation](HARNESS_AUTOMATION.md) | Opt-in Codex heartbeat activation, runtime artifacts, cron gating, and command-policy boundaries. |
+| [Harness automation](HARNESS_AUTOMATION.md) | Opt-in heartbeat activation, typed LSCli profiles, reserved actions/controller accounting, runtime artifacts, cron gating and command-policy boundaries. |
 
 ## Skills And Workflow Packages At A Glance
 
-Localsetup installs both capability skills and workflow packages into the managed package library. Keep [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical reference for:
+LocalSetup installs both capability skills and workflow packages into the managed package library. Keep [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical reference for:
 
 - source layout and runtime shape
 - installer behavior and dependency pull-in
@@ -66,10 +72,10 @@ Localsetup installs both capability skills and workflow packages into the manage
 | Page | What it covers |
 |---|---|
 | [Skills and rules](SKILLS_AND_RULES.md) | How always-loaded context, skills, and adapters fit together. |
-| [Agent Skills compliance](AGENT_SKILLS_COMPLIANCE.md) | How Localsetup implements the Agent Skills spec. |
+| [Agent Skills compliance](AGENT_SKILLS_COMPLIANCE.md) | How LocalSetup implements the Agent Skills spec. |
 | [Skill importing](SKILL_IMPORTING.md) | Import skills from URLs or local paths with validation and screening. |
 | [Skill discovery](SKILL_DISCOVERY.md) | Public skill registry/index workflow and recommendations. |
-| [Skill interoperability](SKILL_INTEROPERABILITY.md) | How skills move between Localsetup and spec-compatible hosts. |
+| [Skill interoperability](SKILL_INTEROPERABILITY.md) | How skills move between LocalSetup and spec-compatible hosts. |
 | [Skill normalization](SKILL_NORMALIZATION.md) | How imported or in-tree skills are cleaned up and standardized. |
 | [Task skill matching](TASK_SKILL_MATCHING.md) | How agents choose the right skill for a task. |
 
@@ -81,7 +87,7 @@ Registered capability highlights:
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 - `ls-ui-browser-debugging`: UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests.
 - `ls-requesting-code-review`: Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
-- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
+- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, LocalSetup comparison, provenance metadata, and report-first import/update/removal planning.
 
 ## Agent Q Transport
 

@@ -1,7 +1,7 @@
 ---
 name: ls-antigravity-awesome-skills
 description: Inventory wrapper for the Antigravity awesome skills bundle. Use when
-  evaluating that large bundle before selecting narrow Localsetup-native coverage.
+  evaluating that large bundle before selecting narrow LocalSetup-native coverage.
 metadata:
   version: '1.0'
 extensions:
@@ -24,7 +24,7 @@ Use this skill when working on Antigravity awesome skills bundle inventory tasks
 ## Workflow
 
 - Treat this as an upstream inventory and triage surface, not a signal to bulk-install thousands of skills.
-- Resolve overlap with existing Localsetup skills before importing any individual upstream item.
+- Resolve overlap with existing LocalSetup skills before importing any individual upstream item.
 - Run importer, vetter, normalizer, and sandbox checks on the selected source path before any future import.
 
 ## Boundaries

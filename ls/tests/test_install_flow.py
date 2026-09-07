@@ -97,6 +97,13 @@ def enable_checkbox_key_mode(monkeypatch: pytest.MonkeyPatch, stream: FakeKeyInp
     monkeypatch.setattr(wizard.tty, "setcbreak", lambda fd: None)
 
 
+def prepare_installer_source_metadata(source: Path, root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep copied source identity and child Python aligned with the test runtime."""
+    for name in ("VERSION", "pyproject.toml"):
+        shutil.copy2(source / name, root / name)
+    monkeypatch.setenv("PATH", str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", ""))
+
+
 def make_temp_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
@@ -140,7 +147,7 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "init"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "init"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -161,7 +168,7 @@ def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, st
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "legacy"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "legacy"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -179,7 +186,7 @@ def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, st
     shutil.copytree(source / "ls", repo / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -201,7 +208,7 @@ def make_bootstrap_git_repo_with_release_tags(tmp_path: Path) -> tuple[Path, str
     (repo / "README.md").write_text("# Localsetup\n\nrelease refresh\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "release"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "release"],
         cwd=repo,
         text=True,
         capture_output=True,

@@ -107,7 +107,7 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
 
 def render_markdown_report(context: dict) -> str:
     lines = [
-        "# Localsetup Install Context",
+        "# LocalSetup Install Context",
         "",
         f"- Repo: `{context['environment']['repo_root']}`",
         f"- Home: `{context['environment']['home']}`",

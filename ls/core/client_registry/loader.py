@@ -10,6 +10,7 @@ import yaml
 from ..paths import PathValidationError, validate_home_scoped_path, validate_repo_relative_path
 from ..schema import validate_json_schema
 from .models import ClientFamily, ClientRegistry, ClientVariant, freeze
+from .qualification import integration_issues
 
 
 MAX_REGISTRY_BYTES = 512 * 1024
@@ -192,6 +193,7 @@ def _semantic_issues(payload: dict[str, Any]) -> list[str]:
         for variant in variants:
             variant_id = str(variant["id"])
             field = f"{family_id}/{variant_id}"
+            issues.extend(integration_issues(variant, field=field))
             research = variant["research"]
             if research["status"] in {"verified", "partial"} and not research["sources"]:
                 issues.append(f"{field}.research: verified or partial research requires official sources")
@@ -245,6 +247,10 @@ def _semantic_issues(payload: dict[str, Any]) -> list[str]:
             compatibility = variant.get("compatibility")
             if compatibility is None:
                 continue
+            for scope in ("repo", "global"):
+                write_paths = compatibility.get(f"{scope}_write_paths")
+                if write_paths is not None and not set(write_paths).issubset(variant["skills"][scope]["paths"]):
+                    issues.append(f"{field}.compatibility.{scope}_write_paths: must be a subset of declared skill discovery paths")
             platform_ids.append(str(compatibility["platform_id"]))
             projection_orders.append(int(compatibility["order"]))
             if variant["support_status"] != "supported":

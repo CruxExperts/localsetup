@@ -85,7 +85,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     term.title("Result")
     term.detail_line("Decides: Confirms what was installed and which follow-up commands are useful.")
     if verify["ok"]:
-        term.status_line("ok", "Localsetup installed successfully.")
+        term.status_line("ok", "LocalSetup installed successfully.")
     else:
         term.status_line("warn", "Install finished, but verification reported issues.")
     term.key_value_block(

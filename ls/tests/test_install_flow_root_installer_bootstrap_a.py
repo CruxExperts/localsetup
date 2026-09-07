@@ -10,7 +10,7 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
         shutil.copy2(source / name, bootstrap_repo / name)
     subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
         cwd=bootstrap_repo,
         text=True,
         capture_output=True,
@@ -83,7 +83,7 @@ def test_root_installer_retry_sync_keeps_automation_stdout_json_only(tmp_path: P
         shutil.copy2(source / name, bootstrap_repo / name)
     subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
         cwd=bootstrap_repo,
         text=True,
         capture_output=True,
@@ -148,7 +148,7 @@ def test_root_installer_piped_bootstrap_requires_explicit_uv_install_when_missin
         shutil.copy2(source / name, bootstrap_repo / name)
     subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
         cwd=bootstrap_repo,
         text=True,
         capture_output=True,
@@ -543,6 +543,6 @@ def test_root_installer_offline_release_lookup_reuses_existing_managed_source(tm
         check=True,
     ).stdout.strip()
     assert completed.returncode == 0, completed.stderr
-    assert "failed to discover the latest Localsetup release; using existing managed source" in completed.stderr
+    assert "failed to discover the latest LocalSetup release; using existing managed source" in completed.stderr
     assert after == before
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()

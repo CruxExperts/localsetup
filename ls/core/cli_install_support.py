@@ -299,6 +299,10 @@ def _apply_install_plan(
 
 def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_root: Path) -> dict:
     _ensure_synced()
+    from .retained_update import retained_repository_plan
+    retained_plan = retained_repository_plan(root, home, target_root)
+    if retained_plan is not None:
+        return {"mode": "recorded_repo", "repair": {"ok": True, "actions": []}, "plan": retained_plan}
     repair = run_repair(
         root,
         home=home,
@@ -308,6 +312,16 @@ def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_
         dependency_mode=config.dependency_mode,
         apply=False,
     )
+    if repair.get("skill_scope") == "personal" and repair.get("ok") and not repair.get("actions"):
+        from .personal_update import build_recorded_personal_plan
+        return {"mode": "recorded_personal", "repair": repair,
+                "plan": build_recorded_personal_plan(root, home, target_root)}
+    if repair.get("skill_scope") == "both" and repair.get("ok") and not repair.get("actions"):
+        from .personal_update import build_recorded_both_plan
+        return {"mode": "recorded_both", "repair": repair,
+                "plan": build_recorded_both_plan(root, home, target_root)}
+    if repair.get("skill_scope") in {"personal", "both"}:
+        return {"mode": "repair_required", "repair": repair, "plan": None}
     if repair.get("blockers") or repair.get("decisions"):
         return {"mode": "repair_required", "repair": repair, "plan": None}
     if not _repair_detected_existing_state(repair):
@@ -333,58 +347,55 @@ def _run_self_refresh(
     _ensure_synced()
     target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
     packs = packs_override if packs_override is not None else _all_configured_packs(root)
-    existing_platforms = _existing_target_platforms(root, target_root, home)
-    platforms = platforms_override if platforms_override is not None else [item["platform"] for item in existing_platforms]
-    attach_mode = config.attach_mode
-    if not attach_mode_explicit:
-        selected_modes = {item["mode"] for item in existing_platforms if item["platform"] in set(platforms)}
-        if len(selected_modes) == 1:
-            attach_mode = selected_modes.pop()
-        elif len(selected_modes) > 1:
-            return {
-                "ok": False,
-                "issues": [
-                    "self-refresh found mixed existing adapter modes; pass --mode symlink or --mode portable explicitly"
-                ],
-                "selected": {
-                    "packs": packs,
-                    "platforms": platforms,
-                    "target_root": str(target_root),
-                    "attach_mode": None,
-                },
-            }
+    from .self_refresh import recorded_refresh
+    plan = recorded_refresh(root, home, target_root, config, packs,
+                            platforms_override, attach_mode_explicit)
+    platforms = list(plan.rollback_metadata['platforms']) if plan else (platforms_override or [])
+    attach_mode = plan.rollback_metadata['attach_mode'] if plan else config.attach_mode
+    if plan is None and not attach_mode_explicit:
+        existing = _existing_target_platforms(root, target_root, home)
+        modes = {item['mode'] for item in existing if item['platform'] in set(platforms)}
+        if len(modes) > 1:
+            raise ValueError('self-refresh found mixed adapter modes; select an explicit --mode')
+        if modes:
+            attach_mode = modes.pop()
+    if plan is None:
+        plan = build_install_plan(
+            root,
+            home=home,
+            packs=packs,
+            preset=config.preset,
+            skills=config.skills,
+            workflows=config.workflows,
+            skill_classes=config.skill_classes,
+            skill_tags=config.skill_tags,
+            exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
+            attach_mode=attach_mode,
+            platform_ids=platforms,
+            target_root=target_root,
+            skill_scope=config.skill_scope,
+        )
+    from .apply_preflight import preflight_install_plan
+    preflight = preflight_install_plan(root, plan, home, target_root=target_root)
+    if not preflight['ok']:
+        raise RuntimeError(f"install preflight failed: {preflight['blockers']}")
     dependency_info = (
         ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=target_root)
-        if config.dependency_mode != "prompt-only"
-        else None
-    )
-    plan = build_install_plan(
-        root,
-        home=home,
-        packs=packs,
-        preset=config.preset,
-        skills=config.skills,
-        workflows=config.workflows,
-        skill_classes=config.skill_classes,
-        skill_tags=config.skill_tags,
-        exclude_skills=config.exclude_skills,
-        global_packs=config.global_packs,
-        global_preset=config.global_preset,
-        global_skills=config.global_skills,
-        global_workflows=config.global_workflows,
-        global_skill_classes=config.global_skill_classes,
-        global_skill_tags=config.global_skill_tags,
-        global_exclude_skills=config.global_exclude_skills,
-        repo_packs=config.repo_packs,
-        repo_preset=config.repo_preset,
-        repo_skills=config.repo_skills,
-        repo_workflows=config.repo_workflows,
-        repo_skill_classes=config.repo_skill_classes,
-        repo_skill_tags=config.repo_skill_tags,
-        repo_exclude_skills=config.repo_exclude_skills,
-        attach_mode=attach_mode,
-        platform_ids=platforms,
-        target_root=target_root,
+        if config.dependency_mode != "prompt-only" else None
     )
     result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
     verify = verify_install(root, home=home, platform_ids=platforms, target_root=target_root)

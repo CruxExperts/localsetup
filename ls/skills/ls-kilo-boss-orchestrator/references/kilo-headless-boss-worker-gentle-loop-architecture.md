@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This skill coordinates a small headless Kilo execution loop in a target repository without making generated adapter trees part of the Localsetup source boundary.
+This skill coordinates a small headless Kilo execution loop in a target repository without making generated adapter trees part of the LocalSetup source boundary.
 
 ## Components
 

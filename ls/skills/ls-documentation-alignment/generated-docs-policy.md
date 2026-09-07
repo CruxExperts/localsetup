@@ -2,7 +2,7 @@
 
 Generated docs are owned by tooling and should not be hand-edited.
 
-## Localsetup generated alignment files
+## LocalSetup generated alignment files
 
 - `ls/docs/_generated/docs-inventory.json`
 - `ls/docs/_generated/docs-truth-map.json`

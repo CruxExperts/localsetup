@@ -5,7 +5,7 @@ metadata:
   version: "1.0"
 ---
 
-# Localsetup Scrapling skill
+# LocalSetup Scrapling skill
 
 ## Purpose
 

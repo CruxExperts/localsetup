@@ -125,7 +125,7 @@ def test_drift_packets_detect_changed_manifests() -> None:
 
 def test_markdown_version_packets_ignore_historical_contexts(tmp_path: Path) -> None:
     current = tmp_path / "README.md"
-    current.write_text("Install Localsetup 1.2.3 today.\n", encoding="utf-8")
+    current.write_text("Install LocalSetup 1.2.3 today.\n", encoding="utf-8")
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text("Released 1.2.3 historically.\n", encoding="utf-8")
     inventory = {
@@ -145,7 +145,7 @@ def test_markdown_version_packets_ignore_historical_contexts(tmp_path: Path) -> 
 def test_ai_adjudication_schema_accepts_packet_result() -> None:
     payload = {
         "packet_id": "markdown.version_reference_drift:abc",
-        "finding": "README has stale Localsetup version",
+        "finding": "README has stale LocalSetup version",
         "confidence": 0.9,
         "category": "docs",
         "severity": "high",
@@ -295,6 +295,12 @@ def test_new_qc_workflow_static_contracts() -> None:
             trusted = next(step for step in job["steps"] if step.get("name") == "Run trusted-base PR QC review")
             assert trusted["if"] == "steps.qc_route.outputs.route == 'trusted-base'"
             assert "secrets.QC_LLM_API_KEY" in trusted["env"]["QC_LLM_API_KEY"]
+            for key in ("LLM_MODE", "QC_LLM_BASE_URL", "QC_LLM_API_KEY", "QC_LLM_ORGANIZATION", "QC_LLM_PROJECT"):
+                expression = trusted["env"][key]
+                assert "vars.QC_PR_LLM_ENABLED == 'true' &&" in expression
+                assert "github.event_name == 'pull_request' &&" in expression
+                assert "github.event.pull_request.head.repo.full_name == github.repository &&" in expression
+            assert trusted["env"]["LLM_MODE"].endswith("'auto' || 'off' }}")
             assert "python tools/qc_patrol/cli.py pr-review" in trusted["run"]
             assert "qc-subject/tools/qc_patrol/cli.py" not in trusted["run"]
             subject = next(step for step in job["steps"] if step.get("name") == "Run no-secret subject PR QC review")
@@ -348,30 +354,35 @@ def test_pr_review_prompt_requires_strict_json() -> None:
     assert "{\"findings\":[]}" in rules
 
 
-def test_llm_client_success_and_retry(monkeypatch: pytest.MonkeyPatch) -> None:
-    config = load_config(REPO).llm
-    config = SimpleNamespace(**{**config.__dict__, "base_url": "https://example.test", "api_key": "secret", "retry_count": 1})
-    calls = {"count": 0}
+@pytest.mark.parametrize("api", ["chat_completions", "responses"])
+def test_llm_client_shared_completion_preserves_redaction(monkeypatch, api):
+    from dataclasses import replace
+    from ls.core.agent.completion_contract import envelope
+    config=replace(load_config(REPO).llm,base_url="https://example.test/v1",api_key="secret",api_style=api)
+    calls=[]
+    def complete(root,payload,authority):
+        calls.append(payload)
+        request=json.loads(payload['request'])
+        assert 'secret-value' not in request['input']
+        assert request['max_attempts']==1 and 'temperature' not in request
+        assert payload['profile']['api']==api
+        return envelope('succeeded',model=config.model,data={'findings':[]},attempts=1)
+    monkeypatch.setattr('ls.core.agent.completion_run.run',complete)
+    assert LLMClient(config).complete('api_key=secret-value')=='{"findings":[]}'
+    assert len(calls)==1
 
-    class Response:
-        content = b"{}"
 
-        def raise_for_status(self) -> None:
-            return None
-
-        def json(self) -> dict[str, object]:
-            return {"choices": [{"message": {"content": '{"findings":[]}'}}]}
-
-    def post(*args: object, **kwargs: object) -> Response:
-        calls["count"] += 1
-        if calls["count"] == 1:
-            raise TimeoutError("timeout")
-        return Response()
-
-    monkeypatch.setattr("tools.qc_patrol.llm_client.requests.post", post)
-    monkeypatch.setattr("tools.qc_patrol.llm_client.time.sleep", lambda _seconds: None)
-    assert LLMClient(config).complete("api_key=secret-value") == '{"findings":[]}'
-    assert calls["count"] == 2
+def test_llm_client_uncertain_not_retried(monkeypatch):
+    from dataclasses import replace
+    from ls.core.agent.completion_contract import envelope
+    config=replace(load_config(REPO).llm,base_url="https://example.test",api_key="secret",retry_count=4)
+    calls=[]
+    def complete(*args):
+        calls.append(1)
+        return envelope('uncertain',model=config.model,attempts=1)
+    monkeypatch.setattr('ls.core.agent.completion_run.run',complete)
+    with pytest.raises(RuntimeError,match='uncertain'):LLMClient(config).complete('prompt')
+    assert calls==[1]
 
 
 def test_llm_strict_json_invalid_response(tmp_path: Path) -> None:

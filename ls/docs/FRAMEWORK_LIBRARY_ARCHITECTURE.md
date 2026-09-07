@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-architecture
 ---
 
@@ -8,9 +8,9 @@ owner_skill: ls-architecture
 
 ## Decision
 
-Localsetup framework capabilities belong in narrow, importable `ls/core/<domain>/` packages. Public `ls/tools/` files are thin direct-execution wrappers; the top-level `localsetup` CLI composes approved domains but does not contain their policy or filesystem logic.
+LocalSetup framework capabilities belong in narrow, importable `ls/core/<domain>/` packages. Public `ls/tools/` files are thin direct-execution wrappers; the top-level `localsetup` CLI composes approved domains but does not contain their policy or filesystem logic.
 
-The trusted review queue remains intentionally isolated in `ls/tools/trusted_work_queue/` for the released snapshot and shared-folder transport phases. It is not a packaged Localsetup public API, a `localsetup` subcommand, or a harness extension. Promote it only when its phase-1/phase-2 contract or a second transport needs a reusable library boundary. Future deterministic materialization, isolation, and returned-result handling are external harness-owned concerns, not additional Localsetup filesystem APIs.
+The trusted review queue remains intentionally isolated in `ls/tools/trusted_work_queue/` for the released snapshot and shared-folder transport phases. It is not a packaged LocalSetup public API, a `localsetup` subcommand, or a harness extension. Promote it only when its phase-1/phase-2 contract or a second transport needs a reusable library boundary. Future deterministic materialization, isolation, and returned-result handling are external harness-owned concerns, not additional LocalSetup filesystem APIs.
 
 ## Boundaries
 
@@ -19,7 +19,7 @@ The trusted review queue remains intentionally isolated in `ls/tools/trusted_wor
 | `ls/core/<domain>/` | Typed domain models, deterministic rules, filesystem/network adapters, validation, and machine-readable results | CLI parsing, terminal rendering, agent/model selection, remote UI control |
 | `ls/tools/<tool>.py` | Repository-root resolution, import setup, and `main()` delegation | Domain policy or compatibility logic |
 | `ls/core/cli*.py` | Stable command routing, shared target selection, exit status, and output-mode integration | Queue transport mechanics or worker execution |
-| Target-node helper | Authenticated node-local orchestration of approved Localsetup APIs | Browser-facing control, terminal emulation, direct user sockets |
+| Target-node helper | Authenticated node-local orchestration of approved LocalSetup APIs | Browser-facing control, terminal emulation, direct user sockets |
 | Dashboard | Human-facing capability requests and bounded telemetry | Herdr sockets, tmux, WezTerm, queue filesystem mutation, or OmniRoute credentials |
 
 The queue, dashboard/Herdr control plane, Agent Q, A2A, and OmniRoute inference routing remain separate systems. A queue packet contains immutable snapshot and opaque PRD bytes; it does not select models, teams, providers, prompts, or executor commands.
@@ -53,7 +53,7 @@ Introduce a typed `ls/core/harness_extensions/` registry only when two independe
 
 1. Keep snapshot and shared-folder transport isolated while their contracts settle.
 2. When both shared-folder and a second transport share a stable phase-1/phase-2 contract, promote the domain into `ls/core/trusted_work_queue/` in one cutover.
-3. Add a Localsetup CLI surface only after the promoted library has focused unit tests and a safe, bounded output contract.
+3. Add a LocalSetup CLI surface only after the promoted library has focused unit tests and a safe, bounded output contract.
 4. Consider a harness registry only after a second lifecycle extension demonstrates the shared need.
 
 Every promotion must retain the focused snapshot and shared-folder transport tests; add thin-wrapper black-box tests and update generated documentation. Python framework changes must also satisfy [PYTHON_ARCHITECTURE_STANDARD.md](PYTHON_ARCHITECTURE_STANDARD.md), including its package responsibilities and architecture check.

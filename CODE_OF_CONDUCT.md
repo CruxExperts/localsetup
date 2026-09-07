@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We want Localsetup to be useful to people who care about safe, reviewable agent workflows. Contributors and maintainers are expected to keep discussion respectful, practical, and focused on the work.
+We want LocalSetup to be useful to people who care about safe, reviewable agent workflows. Contributors and maintainers are expected to keep discussion respectful, practical, and focused on the work.
 
 ## Expected Behavior
 

@@ -1,1 +1,1 @@
-"""Localsetup framework package root."""
+"""LocalSetup framework package root."""

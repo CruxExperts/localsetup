@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-context-index
 ---
 
@@ -8,7 +8,7 @@ owner_skill: ls-context-index
 
 ## Decision
 
-The Localsetup context index is a derived retrieval cache, not an authority. Repository files, framework files, manifests, and generated catalogs remain the evidence source. Agents must perform freshness preflight, use retrieved text only when fresh, and directly read any path reported stale or in `read_direct_paths`.
+The LocalSetup context index is a derived retrieval cache, not an authority. Repository files, framework files, manifests, and generated catalogs remain the evidence source. Agents must perform freshness preflight, use retrieved text only when fresh, and directly read any path reported stale or in `read_direct_paths`.
 
 The deterministic CLI is the canonical execution surface. MCP is an optional, read-only adapter and does not own index lifecycle, task orchestration, queues, dashboard control, Herdr, Agent Q, A2A, or OmniRoute routing.
 
@@ -25,7 +25,7 @@ A public retrieval request accepts only:
 }
 ```
 
-`repo` means the selected repository and `framework` means Localsetup-owned sources. Their opaque provenance identity is `tenant_slug/namespace_slug/corpus_slug/scope_slug`. Consumers cannot choose an arbitrary database path, filesystem root, personal-memory corpus, or removed `global` scope.
+`repo` means the selected repository and `framework` means LocalSetup-owned sources. Their opaque provenance identity is `tenant_slug/namespace_slug/corpus_slug/scope_slug`. Consumers cannot choose an arbitrary database path, filesystem root, personal-memory corpus, or removed `global` scope.
 
 Fresh sources use bounded lexical retrieval by default. Vector or hybrid ranking is an explicit mode, not an authority claim. It can refine discovery but never removes the direct-source-read escalation. The implementation must make lexical mode independent of embedding calls before this default is claimed as delivered.
 

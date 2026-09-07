@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .provenance import load_package_marker, marker_public_snapshot
 from .source import source_commit
+from .installation_ownership import repository_owners
 
 
 def build_lock_payload(
@@ -22,6 +23,7 @@ def build_lock_payload(
     transition_actions = [action for action in plan.actions if action.kind == "retire_historical_adapter"]
     return {
         "version": 2,
+        "skill_scope": plan.rollback_metadata.get("skill_scope", "repo"),
         "pack": pack.pack_id,
         "namespace": pack.namespace,
         "source_commit": source_commit(repo_root),
@@ -48,12 +50,20 @@ def build_lock_payload(
                 "platform": action.details.get("platform"),
                 "platforms": action.details.get("platforms", [action.details.get("platform")]),
                 "path": str(action.path),
+                "owners": repository_owners(attachment_root, action.details.get("platforms", [action.details.get("platform")])),
                 "mode": action.details.get("mode", "symlink"),
                 "global_root": action.details.get("global_root"),
                 "packages": action.details.get("packages", []),
                 "verify_rules": action.details.get("verify_rules", []),
             }
             for action in adapter_actions
+        ],
+        "personal_adapter_targets": [
+            {"path": str(action.path), "owners": action.details["owners"],
+             "platforms": action.details["platforms"], "packages": action.details["packages"],
+             "global_root": action.details["global_root"], "mode": action.details.get("mode", "symlink"),
+             **({"owner_packages": action.details["owner_packages"]} if "owner_packages" in action.details else {})}
+            for action in plan.actions if action.kind == "attach_personal_path"
         ],
         "adapter_transitions": [
             {
@@ -65,7 +75,7 @@ def build_lock_payload(
                 "removed": action.details.get("removed", []),
             }
             for action in transition_actions
-        ],
+        ] if transition_actions else plan.rollback_metadata.get("recorded_adapter_transitions", []),
         "platforms": plan.rollback_metadata.get("platforms", []),
         "global_only": plan.rollback_metadata.get("global_only", False),
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),

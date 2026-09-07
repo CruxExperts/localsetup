@@ -1,4 +1,4 @@
-"""Shared helpers for Localsetup repair orchestration."""
+"""Shared helpers for LocalSetup repair orchestration."""
 
 from __future__ import annotations
 

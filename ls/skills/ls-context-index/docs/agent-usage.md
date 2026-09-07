@@ -104,7 +104,7 @@ localsetup context-index prune apply --scope repo --plan "$PLAN_ID"
 
 ## Agent Rules
 
-- Prefer `repo` for repo work and `framework` for Localsetup framework questions.
+- Prefer `repo` for repo work and `framework` for LocalSetup framework questions.
 - Never ask the index for secret values.
 - Mark stale results as context hints only.
 - Prefer `ACTIVE` docs where status is available.

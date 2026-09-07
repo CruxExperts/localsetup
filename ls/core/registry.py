@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from .lockfile import load_json, save_json
+from .personal_registry import record_personal_owners
 from .provenance import load_package_marker, marker_public_snapshot, package_digest
 
 
@@ -80,6 +81,7 @@ def upsert_target(
         refs = set(str(ref) for ref in package.get("refs", []))
         refs.add(target_id)
         package["refs"] = sorted(refs)
+    record_personal_owners(registry, adapter_targets, set(package_names))
     save_json(registry_path, registry)
     return registry
 
@@ -94,7 +96,7 @@ def remove_target(registry_path: Path, *, target_root: Path) -> dict[str, Any]:
             package["refs"] = refs
         else:
             registry["packages"].pop(package_name, None)
-    if registry.get("targets") or registry.get("packages"):
+    if registry.get("targets") or registry.get("packages") or registry.get("personal_owners"):
         save_json(registry_path, registry)
     elif registry_path.exists():
         registry_path.unlink()

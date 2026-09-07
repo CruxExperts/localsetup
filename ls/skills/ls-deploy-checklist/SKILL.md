@@ -1,7 +1,7 @@
 ---
 name: ls-deploy-checklist
 description: Guide deployment readiness checks. Use before releasing apps, services,
-  packages, Localsetup changes, or infrastructure updates.
+  packages, LocalSetup changes, or infrastructure updates.
 metadata:
   version: '1.0'
 extensions:
@@ -25,7 +25,7 @@ Use this skill when working on deployment readiness tasks.
 
 - Confirm diff scope, config/secrets, migrations, generated artifacts, rollback, monitoring, and user impact.
 - Run the smallest relevant validation first, then broader checks for shared runtime or package surfaces.
-- For Localsetup publish work, include generated docs/version sync and publish-preflight before pushing.
+- For LocalSetup publish work, include generated docs/version sync and publish-preflight before pushing.
 
 ## Boundaries
 

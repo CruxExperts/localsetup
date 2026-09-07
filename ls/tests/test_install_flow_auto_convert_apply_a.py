@@ -549,10 +549,10 @@ def test_apply_rollback_restores_earlier_mutation_and_preserves_later_live_path_
 ) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "cursor"])
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "claude-code"])
     apply_plan(root, plan, home=home)
     earlier = root / ".agents" / "skills"
-    later = root / ".cursor" / "skills"
+    later = root / ".claude" / "skills"
     original_backup = apply_mod._copy_backup
     original_write = apply_mod._write_scoped_adapter
 

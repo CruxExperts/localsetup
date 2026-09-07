@@ -245,6 +245,6 @@ and reviewed skill metadata in stable repository paths.
 
 Use `.agents/state/<task-slug>/` for private run ledgers and other transient
 task state. The controller assigns one Git-bound task slug for every agent and
-tool to reuse. When the target is a Git repository, Localsetup adds
+tool to reuse. When the target is a Git repository, LocalSetup adds
 `.agents/state/` to `.git/info/exclude` instead of modifying tracked ignore files.
 """

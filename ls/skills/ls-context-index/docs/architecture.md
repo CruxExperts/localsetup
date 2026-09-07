@@ -1,6 +1,6 @@
 # Architecture
 
-`ls-context-index` is a thin Localsetup RAG layer over source files. It speeds up retrieval but does not replace Markdown, code, manifests, or generated catalogs as source of truth.
+`ls-context-index` is a thin LocalSetup RAG layer over source files. It speeds up retrieval but does not replace Markdown, code, manifests, or generated catalogs as source of truth.
 
 ## Component Model
 

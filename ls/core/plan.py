@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from .aliases import collect_skill_aliases, legacy_skill_name
-from .adapters import adapter_targets, validate_platform_selectors
+from .adapters import adapter_targets, personal_adapter_targets, validate_platform_selectors
+from .installation_ownership import resolve_skill_scope
 from .manifests import load_pack_config, load_platforms
 from .models import DeployPlan, PlanAction
 from .client_registry.historical import HISTORICAL_ADAPTERS
@@ -39,6 +40,7 @@ def build_install_plan(
     attach_mode: str = "symlink",
     platform_ids: list[str] | None = None,
     target_root: Path | None = None,
+    skill_scope: str | None = None,
 ) -> DeployPlan:
     if attach_mode not in {"symlink", "portable"}:
         raise ValueError(f"unsupported attach mode: {attach_mode}")
@@ -48,7 +50,10 @@ def build_install_plan(
     validate_platform_selectors(repo_root, platform_ids)
     selected_ids = set(platform_ids or [])
     selected_platforms = [p for p in platforms if p.platform_id in selected_ids]
+    if "hermes-agent" in selected_ids and attach_mode != "portable":
+        raise ValueError("Hermes requires independent copies; select --mode portable")
     attachment_root = target_root or repo_root
+    scope = resolve_skill_scope(attachment_root, skill_scope)
     global_root = expand_user_path(pack.global_root, home)
 
     legacy_selector_present = any(
@@ -145,7 +150,7 @@ def build_install_plan(
     else:
         codex_agents = []
 
-    for platform_id in sorted(selected_ids):
+    for platform_id in sorted(selected_ids if scope != "personal" else set()):
         for transition in HISTORICAL_ADAPTERS.get(platform_id, ()):
             actions.append(
                 PlanAction(
@@ -160,7 +165,7 @@ def build_install_plan(
                 )
             )
 
-    for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids if scope != "personal" else [], target_root=attachment_root):
         actions.append(
             PlanAction(
                 "attach_repo_path",
@@ -176,7 +181,20 @@ def build_install_plan(
             )
         )
 
+    if scope in {"personal", "both"}:
+        for target in personal_adapter_targets(repo_root, home, platform_ids):
+            actions.append(PlanAction("attach_personal_path", target["path"], {
+                "platforms": target["platforms"], "owners": target["owners"],
+                "mode": attach_mode, "global_root": str(global_root),
+                "packages": repo_selection.packages,
+            }))
+
+    for action in actions:
+        if "hermes-agent" in action.details.get("platforms", []):
+            action.details["mutable_copy"] = True
+
     rollback = {
+        "skill_scope": scope,
         "created_paths": [str(global_root)],
         "repo_links": [str(a.path) for a in actions if a.kind == "attach_repo_path"],
         "preset": global_selection.preset,
@@ -204,4 +222,8 @@ def build_install_plan(
         "adapter_packages": repo_selection.packages,
         "codex_agents": codex_agents,
     }
+    personal_paths = {a.path for a in actions if a.kind == 'attach_personal_path'}
+    for action in actions:
+        if action.kind == 'retire_historical_adapter' and action.path in personal_paths:
+            action.details['disposition'] = 'delegated-current-personal'
     return DeployPlan(actions=actions, rollback_metadata=rollback)

@@ -550,3 +550,36 @@ def test_heartbeat_direct_command_policy_blocks_git_global_option_bypasses(
     assert entry["timed_out"] is False
     assert entry["stdout_tail"] == ""
     assert entry["stderr_tail"] == ""
+
+
+@pytest.mark.parametrize('kind', ['missing-profile', 'missing-executable', 'obsolete-config'])
+def test_no_agent_skips_all_agent_resolution_but_preserves_hooks(tmp_path, kind):
+    runtime = load_runtime()
+    target = tmp_path / 'repo'
+    target.mkdir()
+    path = write_config(target, agent={'enabled': True, 'profile': 'missing'},
+                        hooks={'before': [{'command': [sys.executable, '-c', 'print("hook ran")']}], 'after': []})
+    import yaml
+    config = yaml.safe_load(path.read_text())
+    if kind == 'missing-executable':
+        config['agent_profiles'] = {'missing': {
+            'client': 'fixture', 'launcher': 'resolved-path',
+            'command': ['nonexistent-heartbeat-fixture-executable'], 'prompt_transport': 'none'}}
+    if kind == 'obsolete-config':
+        config['codex'] = {'enabled': True}
+    path.write_text(yaml.safe_dump(config))
+    plan = runtime.plan_summary(target_root=target, no_agent=True)
+    assert plan['ok'] and len(plan['commands']) == 1
+    result = runtime.run_once(target_root=target, no_agent=True)
+    assert result['ok'] and result['status'] == 'succeeded'
+    assert not runtime.plan_summary(target_root=target, no_agent=False)['ok']
+
+
+def test_disabled_run_never_resolves_enabled_broken_agent(tmp_path):
+    runtime = load_runtime()
+    path = write_config(tmp_path, enabled=False, agent={'enabled': True, 'profile': 'missing'})
+    before = path.read_bytes()
+    result = runtime.run_once(target_root=tmp_path)
+    assert result['status'] == 'skipped' and result['reason'] == 'heartbeat.disabled'
+    assert path.read_bytes() == before
+    assert not state_root(tmp_path).exists()

@@ -23,11 +23,11 @@ Use this skill when working on OpenClaudia marketing skills tasks.
 
 ## Workflow
 
-- Use this wrapper only to inspect the upstream inventory, triage bundle coverage, and avoid duplicate Localsetup skill IDs.
-- Treat every listed upstream path as inventory evidence, not as an installed, vetted, or executable Localsetup skill.
-- For a candidate import, select one upstream path and run the Localsetup importer, vetter, normalizer, and sandbox-validation workflow before use.
+- Use this wrapper only to inspect the upstream inventory, triage bundle coverage, and avoid duplicate LocalSetup skill IDs.
+- Treat every listed upstream path as inventory evidence, not as an installed, vetted, or executable LocalSetup skill.
+- For a candidate import, select one upstream path and run the LocalSetup importer, vetter, normalizer, and sandbox-validation workflow before use.
 - Do not expose ad-platform, CRM, analytics, or social account credentials during evaluation.
-- Prefer native Localsetup skills for repeatable CRO, SEO, content, and email workflows.
+- Prefer native LocalSetup skills for repeatable CRO, SEO, content, and email workflows.
 
 ## Boundaries
 

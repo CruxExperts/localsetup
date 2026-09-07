@@ -68,6 +68,9 @@ def handle(cli, args, root, home) -> int | None:
             print(f"localsetup: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
             return 2
         target_root = _harness_target(args)
+        if args.harness_action == "accounting":
+            from .agent.heartbeat_accounting_cli import main
+            return main(args, target_root or root)
         if args.harness_action == "plan":
             payload = harness_plan(root, target_root)
         elif args.harness_action == "init":
@@ -80,7 +83,13 @@ def handle(cli, args, root, home) -> int | None:
             payload = harness_status(root, target_root)
         elif args.harness_action == "budget":
             payload = harness_budget(root, target_root)
+            if args.accounting_root is not None:
+                from .agent.heartbeat_accounting_cli import report
+                payload["execution_accounting"] = report(args.accounting_root, target_root or root)
         elif args.harness_action == "run":
+            from .agent.heartbeat_execution_cli import selected, main
+            if selected(args):
+                return main(args, target_root or root, root)
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
             print(f"localsetup: unsupported heartbeat action: {args.harness_action}", file=sys.stderr)
@@ -239,6 +248,13 @@ def handle(cli, args, root, home) -> int | None:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+        if args.skill_scope == "personal":
+            from .personal_detach import detach_personal
+            payload = detach_personal(root, home, list(config.platforms or []), apply=args.apply)
+            _print_payload(payload)
+            return 0 if payload["ok"] else 2
+        if args.plan:
+            raise ValueError("Repository detach planning is not yet supported; no changes made")
         from .detach import detach_platforms
         _print_payload(detach_platforms(root, home, target_root, list(config.platforms or [])))
         return 0
@@ -316,9 +332,12 @@ def handle(cli, args, root, home) -> int | None:
     if args.cmd == "version-sync":
         plan = None
         target = args.target
+        if target:
+            from .versioning_policy import guard_target
+            guard_target(root, target)
         if not target:
             plan = plan_version(root, base=args.base, head=args.head)
-            if not plan["ok"] and plan.get("release_type_required"):
+            if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
                 print_json(plan)
                 return 1
             target = plan["target_version"]
@@ -347,14 +366,14 @@ def handle(cli, args, root, home) -> int | None:
 
     if args.cmd == "release-push":
         plan = plan_version(root)
-        if not plan["ok"] and plan.get("release_type_required"):
+        if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
             print_json(plan)
             return 1
         if plan["bump"] != "none" and not plan["ok"]:
             sync_version_files(root, plan["target_version"])
             commit_version_sync(root, plan["target_version"])
             plan = plan_version(root)
-            if not plan["ok"] and plan.get("release_type_required"):
+            if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
                 print_json(plan)
                 return 1
         generated_docs = publish_preflight(root, fix=True)

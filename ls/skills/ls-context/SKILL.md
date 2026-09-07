@@ -1,28 +1,28 @@
 ---
 name: ls-context
-description: "Localsetup framework context - overview, invariants, resolver rules, install layout, and skills index. Load first when working in a repo that uses Localsetup."
+description: "LocalSetup framework context - overview, invariants, resolver rules, install layout, and skills index. Load first when working in a repo that uses LocalSetup."
 metadata:
   version: "1.6"
 ---
 
-# Localsetup - Framework Context
+# LocalSetup - Framework Context
 
 ## Overview
 
-Localsetup is a repo-local framework for agent context, skills, workflows, adapter materialization, and install/repair tooling. The source checkout may physically contain `ls/`, but `ls/*` is a source layout, not a deployed path contract for agents.
+LocalSetup is a repo-local framework for agent context, skills, workflows, adapter materialization, and install/repair tooling. The source checkout may physically contain `ls/`, but `ls/*` is a source layout, not a deployed path contract for agents.
 
-Agents should treat `ls-context` as the broad entry point for framework behavior. Use it before changing Localsetup-managed assets, generated docs, adapters, package materialization, doctor repair, or install validation.
+Agents should treat `ls-context` as the broad entry point for framework behavior. Use it before changing LocalSetup-managed assets, generated docs, adapters, package materialization, doctor repair, or install validation.
 
 Related skill: `ls-requesting-code-review` - Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
 
 ## Layout Definitions
 
-- **Source root:** the Localsetup source checkout passed with `--source-root` or inferred by the local tool entrypoint.
+- **Source root:** the LocalSetup source checkout passed with `--source-root` or inferred by the local tool entrypoint.
 - **Framework root:** `<source-root>/ls`; this contains framework code, source skills, source workflows, docs, templates, tools, and config.
 - **Docs root:** `<framework-root>/docs`; public framework documentation and generated docs live here.
 - **Tools root:** `<framework-root>/tools`; thin tool entrypoints live here.
 - **Package root:** the managed user-level package library from `pack.yaml` (`global.package_root`), normally `~/.local/share/localsetup/packages`.
-- **Target repo:** the repository being attached, verified, repaired, or converted. It may be different from the Localsetup source root.
+- **Target repo:** the repository being attached, verified, repaired, or converted. It may be different from the LocalSetup source root.
 
 The Linux baseline is Python 3.12+, POSIX paths, non-interactive shells, custom `$HOME`, custom `--source-root`, paths with spaces, user-level install roots, and both symlink and portable adapter modes.
 
@@ -44,7 +44,7 @@ localsetup path doc WORKFLOW_REGISTRY.md
 localsetup path tool tmux_ops
 ```
 
-`localsetup path --json` writes and prints `~/.local/share/localsetup/paths.json`. Install, self-refresh, register-shell, and doctor repair also refresh that manifest through Localsetup-native tooling. If the source root or home changes, rerun one of those commands.
+`localsetup path --json` writes and prints `~/.local/share/localsetup/paths.json`. Install, self-refresh, register-shell, and doctor repair also refresh that manifest through LocalSetup-native tooling. If the source root or home changes, rerun one of those commands.
 
 Resolver tokens are allowed in source-authored package files:
 
@@ -57,7 +57,7 @@ During package materialization, resolver tokens are replaced with absolute paths
 
 ## Path Safety Rules
 
-Localsetup validates external path inputs at boundaries. Reject NUL bytes, parent traversal, empty path segments, absolute Windows drive paths, home escapes, and unsafe relative segments.
+LocalSetup validates external path inputs at boundaries. Reject NUL bytes, parent traversal, empty path segments, absolute Windows drive paths, home escapes, and unsafe relative segments.
 
 Python subprocess calls should pass argv lists with `shell=False`. Shell snippets must quote absolute paths safely and avoid unquoted variable expansion.
 
@@ -81,13 +81,13 @@ Whole-project reprocessing treats every tracked text-bearing file as a complete 
 
 Targets include Markdown, Python, shell, YAML, JSON, TOML, text files, executable wrappers, templates, generated docs, workflow manifests, skills, references, scripts, assets, and docs.
 
-For each file, the reprocessor records pre/post hashes and rewrite actions. Source-maintained files may use resolver tokens. Deployed package output must reject `ls/...`, `./ls/...`, `../../docs/...`, unresolved `localsetup://...`, and dangling Localsetup-owned absolute paths unless the path is intentionally source-only metadata. Preserve Python imports such as `ls.core...`; those are module imports, not filesystem instructions.
+For each file, the reprocessor records pre/post hashes and rewrite actions. Source-maintained files may use resolver tokens. Deployed package output must reject `ls/...`, `./ls/...`, `../../docs/...`, unresolved `localsetup://...`, and dangling LocalSetup-owned absolute paths unless the path is intentionally source-only metadata. Preserve Python imports such as `ls.core...`; those are module imports, not filesystem instructions.
 
 ## Doctor And Repair
 
 Use `localsetup doctor` and `localsetup doctor repair` before manual edits to managed adapter shapes, package markers, registries, lockfiles, shell shims, and resolver manifests.
 
-Doctor detects missing or stale `paths.json`, stale shell shim exports, old package roots, adapter links pointing at old roots, package marker or registry drift, lockfile mismatch, adapter collisions, package-surface validation failures, and legacy Localsetup path references.
+Doctor detects missing or stale `paths.json`, stale shell shim exports, old package roots, adapter links pointing at old roots, package marker or registry drift, lockfile mismatch, adapter collisions, package-surface validation failures, and legacy LocalSetup path references.
 
 Repair is conservative:
 
@@ -107,7 +107,7 @@ Do not put private task ledgers into `ls/docs/` or package surfaces unless expli
 
 ## Generated Docs And Volatile Facts
 
-When source docs, workflows, skills, pack metadata, or generated-document inputs change, refresh generated docs from the Localsetup source checkout. Resolve that checkout first so these source-relative paths do not depend on the caller's working directory:
+When source docs, workflows, skills, pack metadata, or generated-document inputs change, refresh generated docs from the LocalSetup source checkout. Resolve that checkout first so these source-relative paths do not depend on the caller's working directory:
 
 ```bash
 (
@@ -134,7 +134,7 @@ localsetup verify --level filesystem
 localsetup context --markdown
 ```
 
-The remaining validators and tests are source-checkout-only. Resolve and enter the Localsetup source root before using their checkout-relative paths:
+The remaining validators and tests are source-checkout-only. Resolve and enter the LocalSetup source root before using their checkout-relative paths:
 
 ```bash
 (
@@ -151,7 +151,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 )
 ```
 
-Run focused pytest files or test functions and matching Localsetup validators before the full suite. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
+Run focused pytest files or test functions and matching LocalSetup validators before the full suite. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
 
 Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—uses one aggregate budget of `max(1, floor(available CPU cores / 3))`. Round down before applying the minimum of one worker; concurrent test processes share the budget.
 
@@ -160,7 +160,7 @@ Before publish, run publish preflight against the intended base and keep generat
 ## Invariants
 
 - Never commit repo-local secrets or PII.
-- Use Localsetup-native tooling before manual edits to managed adapter shapes, symlinks, skills, packages, registries, lockfiles, or installed assets.
+- Use LocalSetup-native tooling before manual edits to managed adapter shapes, symlinks, skills, packages, registries, lockfiles, or installed assets.
 - `ls/docs/` is public framework documentation, not private maintenance state.
 - Check document status before treating framework docs as authoritative.
 - Framework changes follow the active PRD and document lifecycle rules where applicable.

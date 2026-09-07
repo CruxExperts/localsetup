@@ -136,4 +136,4 @@ top -l 1 | head -10
 ## 2026-07 Refresh Note
 
 Compared against upstream debugging workflow sources during the skill import wave.
-Keep the Localsetup seven-step protocol as the stronger default: reproduce, isolate, hypothesize, instrument, verify, fix, and add a regression test.
+Keep the LocalSetup seven-step protocol as the stronger default: reproduce, isolate, hypothesize, instrument, verify, fix, and add a regression test.

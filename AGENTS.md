@@ -13,22 +13,51 @@ Keep this file aligned with the repo's actual workflow. If a rule also belongs i
 ## COIT Repository Mapping
 
 Apply the machine-wide Controlled Outcome Investigation and Termination (COIT)
-control to material Localsetup retries. Keep append-only records in
-`.agents/state/<task-slug>/ledger.md`, binding each Localsetup release problem to its invariant,
+control to material LocalSetup retries. Keep append-only records in
+`.agents/state/<task-slug>/ledger.md`, binding each LocalSetup release problem to its invariant,
 minimal reproduction, affected gate, and exact source/tree/diff state. The
 common policy alone determines COIT triggers, cycle and review requirements,
-counter changes, and terminal dispositions. Do not begin dependent Localsetup
+counter changes, and terminal dispositions. Do not begin dependent LocalSetup
 work or publish while a common COIT or blocker gate remains open.
+
+## Product Naming Contract
+
+Use **LocalSetup (LS)** when introducing the framework abbreviation. Product
+and framework display text uses **LocalSetup**; integrated CLI display text uses
+**LSCli** and its command is `lscli`. The existing framework command and Python
+distribution remain `localsetup`. Do not create `LS` or `ls` command aliases.
+Preserve established imports, paths, URLs, environment variables, persisted keys
+and other compatibility identifiers. Model-request identity is constructed by
+`ls.core.branding.user_agent()` as `LocalSetup/<framework_version()>` and verified
+at final transport send. Preserve upstream attribution, immutable historical
+evidence, and managed source ownership. Correct generators before their outputs;
+review embedded asset text visually and keep accessibility text aligned. Follow
+`ls/docs/BRANDING.md` and the exact exceptions in `ls/config/branding.json`.
+
+## Sequential Release Version Policy
+
+Starting at the last verified published version, apply logical accepted slices
+in integration ancestry order: each independently accepted user-visible feature
+increments MINOR once and resets PATCH to zero; each small fix, documentation
+consolidation, or maintenance slice increments PATCH once. Breaking changes need
+an explicit compatibility decision and appropriate MAJOR treatment. Count a
+slice's final accepted outcome once, not its fixups, merges, generated receipts,
+release syncs, or work already published. Record the deterministic mapping from
+logical slice to source commit, classification, and resulting version.
+
+Use canonical version/release tooling and preserve source/receipt semantics.
+If tooling cannot represent this sequence, implement and validate the missing
+policy before publication; never hand-edit generated versions or weaken gates.
 
 ## Project Structure & Module Organization
 
-This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
+This repository packages LocalSetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
 
 ## Build, Test, and Development Commands
 
 - `uv sync --locked --all-groups`: sync the repo-local uv project environment from `pyproject.toml` and `uv.lock`.
 - `uv run --locked ./ls/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
-- `workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" ls/tests -q`: run the full Python pytest suite using Localsetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
+- `workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" ls/tests -q`: run the full Python pytest suite using LocalSetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
 - `uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python ls/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
 - `uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: from a clean worktree, deterministically prepare an unstaged direct version-sync candidate; a changed candidate returns `prepared_not_ready` for review and separate generated-document receipt work. No-flag preflight never stages or commits; only `--fix` prepares and commits the version and generated-document sync slices.
@@ -54,7 +83,7 @@ Use the same `UV_CACHE_DIR="$PWD/.agents/state/<task-slug>/uv-cache"` prefix for
 
 ## Single Checkout Development Boundary
 
-Localsetup development is consolidated in this checkout. Do not create sibling clones, extra Git worktrees, release staging checkouts, PR-specific checkouts, or other repo-shaped directories for Localsetup work unless the user explicitly authorizes that specific path and purpose in the current task.
+LocalSetup development is consolidated in this checkout. Do not create sibling clones, extra Git worktrees, release staging checkouts, PR-specific checkouts, or other repo-shaped directories for LocalSetup work unless the user explicitly authorizes that specific path and purpose in the current task.
 
 Work within the active repository by default. Use normal branches, local commits, stashes, ledgers, and tightly scoped subagent assignments inside this checkout instead of creating filesystem-level copies. Subagents may inspect and edit bounded paths in the active checkout; they do not need separate worktrees merely for isolation.
 
@@ -84,7 +113,7 @@ Before publishing a branch or opening/updating a PR, treat generated docs and ve
 
 ## Kilo Code Review Contract
 
-`REVIEW.md` is the canonical base-branch contract for Localsetup Kilo Code
+`REVIEW.md` is the canonical base-branch contract for LocalSetup Kilo Code
 reviews. Maintainers must update it in the same change wave when changed review
 surfaces make it stale, keeping its concise, actionable, repository-specific
 regression standard intact. Kilo Code review agents must read and apply
@@ -106,11 +135,11 @@ Do not commit local secrets, generated private state, or machine-specific agent 
 
 ## Adapter Directory Ownership
 
-Agent adapter directories, including `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/skills`, `.openclaw/skills`, `.opencode/skills`, and historical `.agents/skills`, are not exclusive Localsetup-owned surfaces. Repositories may intentionally keep custom skills, symlinks, files, or mixed managed and repo-owned content in those paths.
+Agent adapter directories, including `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/skills`, `.openclaw/skills`, `.opencode/skills`, and historical `.agents/skills`, are not exclusive LocalSetup-owned surfaces. Repositories may intentionally keep custom skills, symlinks, files, or mixed managed and repo-owned content in those paths.
 
-Localsetup repair, migration, installer, and cleanup work must preserve custom adapter content in place by default. Do not move, rename, delete, or "normalize" repo-owned content out of an adapter-shaped directory merely because Localsetup also writes managed links there. A migration out of an adapter directory requires an explicit repo-owner decision and a preservation plan recorded in the run ledger.
+LocalSetup repair, migration, installer, and cleanup work must preserve custom adapter content in place by default. Do not move, rename, delete, or "normalize" repo-owned content out of an adapter-shaped directory merely because LocalSetup also writes managed links there. A migration out of an adapter directory requires an explicit repo-owner decision and a preservation plan recorded in the run ledger.
 
-When a Localsetup tool reports `adapter_content`, `adapter_collision`, or same-directory custom skills, treat that as a manual preservation decision, not permission to make the directory Localsetup-exclusive. Prefer a tool/code fix or a mixed-adapter preservation path over relocating user content.
+When a LocalSetup tool reports `adapter_content`, `adapter_collision`, or same-directory custom skills, treat that as a manual preservation decision, not permission to make the directory LocalSetup-exclusive. Prefer a tool/code fix or a mixed-adapter preservation path over relocating user content.
 
 ## Public And Private Context Boundary
 
@@ -144,7 +173,7 @@ Before editing or validating markdown claims about latest/current versions, rele
 
 If the volatile fact index is absent and a volatile claim is found or introduced, create it using the private repo schema. Keep `.agents/state/volatile-facts.yaml` private and untracked; do not move it into public framework docs.
 
-Use source-code, config, and local CLI verification for Localsetup behavior claims. Use primary upstream research for external claims, such as official docs, release notes, package registries, standards, vendor API schemas, advisories, or live CLI/API behavior where safe. For broad or current external fact verification, use research agents and record source URLs, access dates, conflicts, and limitations in the volatile index.
+Use source-code, config, and local CLI verification for LocalSetup behavior claims. Use primary upstream research for external claims, such as official docs, release notes, package registries, standards, vendor API schemas, advisories, or live CLI/API behavior where safe. For broad or current external fact verification, use research agents and record source URLs, access dates, conflicts, and limitations in the volatile index.
 
 Update the volatile fact index in the same work wave whenever a volatile claim is verified, corrected, de-volatilized, removed, or newly introduced.
 
@@ -174,9 +203,9 @@ When the user will manually relay a handoff, address the user with an informativ
 
 ### Optional Packs, Parallel Slices, And Publishing Integration
 
-An optional Localsetup skill pack may carry durable operating guidance needed to
+An optional LocalSetup skill pack may carry durable operating guidance needed to
 manage that selected capability, but it does not automatically become effective
-policy for the default Localsetup installation or overwrite global Codex
+policy for the default LocalSetup installation or overwrite global Codex
 behavior, hooks, active goals, or user settings. A direct global-Codex change
 requires a separate explicit user request and an isolated owner-scoped change
 with its own validation.

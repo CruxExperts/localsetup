@@ -50,12 +50,12 @@ Official Agent Skills checks:
 - [ ] description explains what the skill does and when to use it.
 - [ ] Optional official validation command was run when available: `skills-ref validate <skill-dir>`.
 
-Localsetup consistency checks (not Agent Skills specification requirements):
+LocalSetup consistency checks (not Agent Skills specification requirements):
 - [ ] metadata.version is present or the absence is documented.
 - [ ] Optional sidecars such as _meta.json match SKILL.md metadata, or drift is reported.
 ```
 
-Treat `SKILL.md` frontmatter as the canonical local metadata. `metadata.version` and sidecar consistency are Localsetup checks, not official Agent Skills validation requirements. Sidecars are provenance or export metadata only; they must not override the local skill/catalog version.
+Treat `SKILL.md` frontmatter as the canonical local metadata. `metadata.version` and sidecar consistency are LocalSetup checks, not official Agent Skills validation requirements. Sidecars are provenance or export metadata only; they must not override the local skill/catalog version.
 
 ### Step 3: Code Review (MANDATORY)
 

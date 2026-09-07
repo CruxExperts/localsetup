@@ -285,7 +285,7 @@ def dependency_status(
         lock_status = "missing"
 
     if not uv_bin:
-        blockers.append("uv is required for Localsetup dependency sync but was not found on PATH")
+        blockers.append("uv is required for LocalSetup dependency sync but was not found on PATH")
         recoverable_next_steps.append("Install uv, or set LOCALSETUP_UV_BIN to a preinstalled uv binary")
     else:
         try:
@@ -303,7 +303,7 @@ def dependency_status(
             if not uv_version:
                 blockers.append(f"uv version output was not recognized: {version_result.stdout.strip()}")
             elif not _version_at_least(uv_version, MIN_UV_VERSION):
-                blockers.append(f"uv {uv_version} is too old; Localsetup requires uv >= {MIN_UV_VERSION}")
+                blockers.append(f"uv {uv_version} is too old; LocalSetup requires uv >= {MIN_UV_VERSION}")
                 recoverable_next_steps.append("Upgrade uv, then rerun `uv lock --check` and `uv sync --locked --no-dev`")
 
     can_check_lock = (
@@ -393,7 +393,7 @@ def ensure_dependencies(
             )
         except OSError as exc:
             raise RuntimeError(
-                f"failed to quarantine Localsetup-owned environment {environment_status['path']}: {exc}"
+                f"failed to quarantine LocalSetup-owned environment {environment_status['path']}: {exc}"
             ) from exc
     if quarantined:
         status = dependency_status(repo_root, mode=mode, data_root=data_root, target_root=target_root, runner=runner)
@@ -446,7 +446,7 @@ def ensure_dependencies(
                 )
             except OSError as exc:
                 raise RuntimeError(
-                    f"failed to quarantine Localsetup-owned environment {source_environment}: {exc}"
+                    f"failed to quarantine LocalSetup-owned environment {source_environment}: {exc}"
                 ) from exc
             sync_attempts += 1
             sync = _run(sync_command, cwd=repo_root, runner=runner)
@@ -456,7 +456,7 @@ def ensure_dependencies(
                 output = sync.stderr.strip() or sync.stdout.strip()
         if sync.returncode != 0:
             if quarantined:
-                repair_warnings.append("Localsetup-owned environment quarantine was preserved after uv sync failure")
+                repair_warnings.append("LocalSetup-owned environment quarantine was preserved after uv sync failure")
             category = _classify_sync_failure(output)
             raise RuntimeError(
                 f"uv sync failed ({category}): {output}. Command: {_command_text(sync_command)}"

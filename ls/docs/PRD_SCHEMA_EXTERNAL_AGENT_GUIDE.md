@@ -1,10 +1,10 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-agentq-transport
 ---
 
-# PRD schema and external agent guide (Localsetup)
+# PRD schema and external agent guide (LocalSetup)
 
 **Purpose:** PRD/spec format, front matter, lifecycle, outcome template. When referencing repo artifacts, attach git hash (see GIT_TRACEABILITY.md).
 

@@ -1,6 +1,6 @@
 # OmniRoute Endpoint Matrix (Administration)
 
-Routes in this matrix are current Localsetup guidance for OmniRoute administration, but management, MCP, catalog, and health routes can vary by OmniRoute version, deployment mode, reverse proxy, and authentication configuration. When a remote deployment returns 404 for a listed management route, verify the deployed version and routing before assuming the capability is absent. Use authenticated `/v1/models` only as a runtime inventory fallback; it does not prove admin access.
+Routes in this matrix are current LocalSetup guidance for OmniRoute administration, but management, MCP, catalog, and health routes can vary by OmniRoute version, deployment mode, reverse proxy, and authentication configuration. When a remote deployment returns 404 for a listed management route, verify the deployed version and routing before assuming the capability is absent. Use authenticated `/v1/models` only as a runtime inventory fallback; it does not prove admin access.
 
 ## Discovery and health
 

@@ -91,7 +91,7 @@ def load_requests() -> ModuleType:
     except ImportError as exc:  # pragma: no cover - environment guidance
         raise SystemExit(
             "Missing dependency: requests. Run `uv sync --locked --no-dev` "
-            "from the Localsetup source checkout."
+            "from the LocalSetup source checkout."
         ) from exc
 
 

@@ -19,8 +19,8 @@ def platform_rows(registry: ClientRegistry) -> list[dict[str, Any]]:
         compatibility = variant.data.get("compatibility")
         if compatibility is None:
             continue
-        repo_skills = variant.data["skills"]["repo"]["paths"]
-        global_skills = variant.data["skills"]["global"]["paths"]
+        repo_skills = compatibility.get("repo_write_paths", variant.data["skills"]["repo"]["paths"])
+        global_skills = compatibility.get("global_write_paths", variant.data["skills"]["global"]["paths"])
         rows.append(
             (
                 int(compatibility["order"]),

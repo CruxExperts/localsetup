@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-# Historical repo skill roots that Localsetup previously managed for supported
+# Historical repo skill roots that LocalSetup previously managed for supported
 # clients. Keeping this alongside the canonical client registry prevents plan,
 # repair, verification, and lock-recording transitions from drifting apart.
 HISTORICAL_ADAPTERS: dict[str, tuple[dict[str, str], ...]] = {

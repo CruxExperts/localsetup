@@ -37,7 +37,7 @@
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "display_name": {"type": "string", "minLength": 1},
-        "kind": {"enum": ["cli", "ide"]},
+        "kind": {"enum": ["cli", "ide", "application"]},
         "support_status": {"enum": ["supported", "experimental", "unsupported"]},
         "research": {"$ref": "#/$defs/research"},
         "executables": {
@@ -54,7 +54,117 @@
         "insertion": {"$ref": "#/$defs/scopedInsertion"},
         "verification": {"$ref": "#/$defs/verification"},
         "rollback": {"$ref": "#/$defs/rollback"},
+        "integration": {"$ref": "#/$defs/integration"},
         "compatibility": {"$ref": "#/$defs/compatibility"}
+      }
+    },
+    "integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycle",
+        "installation",
+        "qualification",
+        "limitations"
+      ],
+      "properties": {
+        "lifecycle": {
+          "enum": [
+            "active",
+            "retained-only",
+            "unsupported"
+          ]
+        },
+        "installation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "instructions"
+          ],
+          "properties": {
+            "method": {
+              "enum": [
+                "managed-release",
+                "vendor-installer",
+                "package-manager",
+                "editor-extension",
+                "application",
+                "manual",
+                "unavailable"
+              ]
+            },
+            "instructions": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "qualification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalog",
+            "filesystem",
+            "host",
+            "evidence"
+          ],
+          "properties": {
+            "catalog": {
+              "enum": [
+                "implemented",
+                "bounded"
+              ]
+            },
+            "filesystem": {
+              "enum": [
+                "verified",
+                "not-run",
+                "not-applicable"
+              ]
+            },
+            "host": {
+              "enum": [
+                "verified",
+                "not-run",
+                "blocked",
+                "not-applicable"
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "reference"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "filesystem",
+                      "host",
+                      "documentation"
+                    ]
+                  },
+                  "reference": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     },
     "research": {
@@ -67,14 +177,50 @@
         "sources": {
           "type": "array",
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["kind", "url"],
-            "properties": {
-              "kind": {"enum": ["official_docs", "official_release", "official_source"]},
-              "url": {"type": "string", "pattern": "^https://"},
-              "version": {"type": "string", "minLength": 1}
-            }
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "url"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "official_docs",
+                      "official_release",
+                      "official_source"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "pattern": "^https://"
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "reference"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "repository_source"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "pattern": "^(?:ls/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.(?:py|md|json|yaml)|pyproject\\.toml)$"
+                  }
+                }
+              }
+            ]
           }
         }
       }
@@ -94,7 +240,7 @@
       "required": ["status", "resolution", "paths", "precedence_status", "ownership", "collision"],
       "properties": {
         "status": {"$ref": "#/$defs/status"},
-        "resolution": {"enum": ["single", "first-existing", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
+        "resolution": {"enum": ["single", "first-existing", "first-nonempty", "aggregate", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
         "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "precedence_status": {"enum": ["verified", "unverified", "unsupported"]},
         "ownership": {"enum": ["client-native", "localsetup-managed", "shared"]},
@@ -196,13 +342,15 @@
       "required": ["platform_id", "order", "native_config", "smoke_test_level", "verify_rules", "rollback_class"],
       "properties": {
         "platform_id": {"$ref": "#/$defs/id"},
+        "repo_write_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "global_write_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "order": {"type": "integer", "minimum": 0},
         "native_config": {"enum": ["symlink_or_reference"]},
         "smoke_test_level": {"enum": ["filesystem", "host", "smoke"]},
         "verify_rules": {
           "type": "array",
           "minItems": 1,
-          "items": {"enum": ["skills_visible", "namespace_ls"]},
+          "items": {"enum": ["skills_visible", "namespace_ls", "goose_skills_configured"]},
           "uniqueItems": true
         },
         "rollback_class": {"const": "managed-entry-removal"}

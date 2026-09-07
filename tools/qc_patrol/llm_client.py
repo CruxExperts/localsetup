@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import time
 from typing import Any
-
-import requests
+import uuid
 
 from .config import LLMConfig
 from .redaction import redact_text
@@ -15,76 +16,40 @@ class LLMDisabled(RuntimeError):
 
 
 class LLMClient:
+    """Keep QC's string-returning interface over protected tool-free completion."""
     def __init__(self, config: LLMConfig):
         self.config = config
 
-    def _headers(self) -> dict[str, str]:
-        if not self.config.api_key:
-            raise LLMDisabled("QC_LLM_API_KEY is not configured")
-        headers = {"Authorization": f"Bearer {self.config.api_key}", "Content-Type": "application/json"}
-        if self.config.organization:
-            headers["OpenAI-Organization"] = self.config.organization
-        if self.config.project:
-            headers["OpenAI-Project"] = self.config.project
-        return headers
-
-    def _payload(self, prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc_pr_review") -> dict[str, Any]:
-        prompt = redact_text(prompt)
-        schema = response_schema or LLM_REVIEW_SCHEMA
-        structured_output = {
-            "type": "json_schema",
-            "json_schema": {
-                "name": schema_name,
-                "strict": True,
-                "schema": schema,
-            },
-        }
-        if self.config.api_style == "responses":
-            return {
-                "model": self.config.model,
-                "input": prompt,
-                "temperature": self.config.temperature,
-                "max_output_tokens": self.config.max_tokens,
-                "text": {
-                    "format": {
-                        "type": "json_schema",
-                        "name": schema_name,
-                        "strict": True,
-                        "schema": schema,
-                    }
-                },
-            }
-        return {
-            "model": self.config.model,
-            "temperature": self.config.temperature,
-            "max_tokens": self.config.max_tokens,
-            "messages": [{"role": "user", "content": prompt}],
-            "response_format": structured_output,
-        }
-
     def complete(self, prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc_pr_review") -> str:
-        if not self.config.base_url:
-            raise LLMDisabled("QC_LLM_BASE_URL is not configured")
-        url = self.config.base_url.rstrip("/")
-        url = f"{url}/responses" if self.config.api_style == "responses" and not url.endswith("/responses") else url
-        url = f"{url}/chat/completions" if self.config.api_style == "chat_completions" and not url.endswith("/chat/completions") else url
-        last_error: Exception | None = None
-        for attempt in range(self.config.retry_count + 1):
-            try:
-                response = requests.post(url, headers=self._headers(), json=self._payload(prompt, response_schema, schema_name), timeout=self.config.timeout_seconds)
-                response.raise_for_status()
-                data = response.json()
-                if self.config.api_style == "responses":
-                    if data.get("status") == "incomplete":
-                        reason = (data.get("incomplete_details") or {}).get("reason", "unknown")
-                        raise RuntimeError(f"LLM response incomplete: {reason}")
-                    return str(data.get("output_text") or data.get("output", [{}])[0].get("content", [{}])[0].get("text", ""))
-                finish_reason = data.get("choices", [{}])[0].get("finish_reason")
-                if finish_reason == "length":
-                    raise RuntimeError("LLM response incomplete: max_tokens")
-                return str(data["choices"][0]["message"]["content"])
-            except Exception as exc:  # requests exposes several timeout/HTTP exception types.
-                last_error = exc
-                if attempt < self.config.retry_count:
-                    time.sleep(min(2**attempt, 5))
-        raise RuntimeError(f"LLM request failed after retries: {last_error}") from last_error
+        if not self.config.base_url or not self.config.api_key:
+            raise LLMDisabled("QC LLM endpoint and credential must be configured")
+        try:
+            from ls.core.agent.completion_run import run,identity
+            from ls.core.agent.coding_run import CodingGrant
+            from ls.core.agent.profiles import parse,wire
+            from ls.core.agent.diagnostics import locations
+            base=self.config.base_url.rstrip('/')
+            suffix='/responses' if self.config.api_style=='responses' else '/chat/completions'
+            if base.endswith(suffix):base=base[:-len(suffix)]
+            capabilities=['native_schema']+['reasoning:'+effort for effort in self.config.reasoning_efforts]
+            if self.config.temperature_supported:capabilities.append('temperature')
+            elif self.config.temperature!=0:raise ValueError('Temperature requires explicit support')
+            profile=parse({'base_url':base,'api':self.config.api_style,'model':self.config.model,
+                'credential_env':'QC_LLM_API_KEY','timeout_seconds':self.config.timeout_seconds,
+                'capabilities':capabilities,'allow_loopback_http':self.config.allow_loopback_http,
+                'organization':self.config.organization,'project':self.config.project})
+            request={'interface_version':1,'model':profile.model,'deadline_seconds':self.config.timeout_seconds,
+                'max_attempts':1,'max_output_tokens':self.config.max_tokens,'input':redact_text(prompt),
+                'output_schema':response_schema if response_schema is not None else LLM_REVIEW_SCHEMA,'schema_name':schema_name}
+            if self.config.reasoning_effort:request['reasoning_effort']=self.config.reasoning_effort
+            if self.config.temperature_supported:request['temperature']=self.config.temperature
+            payload={'profile':wire(profile),'credential':self.config.api_key,'request':json.dumps(request,allow_nan=False)}
+            identifier=uuid.uuid4().hex
+            authority=CodingGrant(identifier,identifier,identity(payload),time.monotonic()+self.config.timeout_seconds)
+            root=Path(self.config.runtime_root or locations(Path.home())['runtimes']).expanduser().absolute()
+            result=run(root,payload,authority)
+        except TimeoutError:raise RuntimeError('QC completion deadline') from None
+        except (OSError,ValueError,TypeError,RuntimeError,ImportError):raise RuntimeError('QC completion unavailable or uncertain') from None
+        if result['status']=='unavailable':raise LLMDisabled('QC completion unavailable')
+        if result['status']!='succeeded':raise RuntimeError('QC completion '+result['status'])
+        return json.dumps(result['data'],ensure_ascii=True,separators=(',',':'),allow_nan=False)

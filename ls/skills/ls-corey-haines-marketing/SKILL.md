@@ -24,7 +24,7 @@ Use this skill when working on Corey Haines marketing skills tasks.
 ## Workflow
 
 - Use the bundle as source coverage for marketing workflows, not as a blanket import.
-- Prefer Localsetup-native skills for CRO, email sequences, and repeatable marketing operations.
+- Prefer LocalSetup-native skills for CRO, email sequences, and repeatable marketing operations.
 - Keep analytics, CRM, ad-platform, and customer-list credentials out of examples and logs.
 
 ## Boundaries

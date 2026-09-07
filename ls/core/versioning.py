@@ -9,6 +9,8 @@ from typing import Iterable
 from .git_subprocess import run_git
 from . import versioning_sync as _sync
 from .provenance_source import is_generated_output_path
+from . import versioning_sequence as _sequence
+from . import versioning_policy as _policy
 from .versioning_constants import (
     BREAKING_CHANGE_RE,
     BREAKING_SUBJECT_RE,
@@ -196,6 +198,26 @@ def list_commits(repo_root: Path, base: str, head: str) -> list[CommitInfo]:
     return commits
 
 
+
+def list_integrated_commits(repo_root: Path, base: str, head: str) -> list[CommitInfo]:
+    if base == head:
+        return []
+    raw = _run_git(repo_root, ["log", "--reverse", "--format=%H%x1f%s%x1f%b%x1e", f"{base}..{head}"]).stdout
+    commits: list[CommitInfo] = []
+    for record in raw.split("\x1e"):
+        record = record.strip("\n")
+        if not record:
+            continue
+        parts = record.split("\x1f", 2)
+        if len(parts) != 3:
+            continue
+        commits.append(CommitInfo(sha=parts[0], subject=parts[1], body=parts[2]))
+    graph = _git_text(repo_root, ["rev-list", "--parents", head, "^" + base])
+    parents = {parts[0]: parts[1:] for line in graph.splitlines() if (parts := line.split())}
+    by_sha = {commit.sha: commit for commit in commits}
+    return [by_sha[sha] for sha in _sequence.integration_order(parents, head)]
+
+
 def classify_commit(subject: str, body: str = "") -> str:
     if subject.startswith("Merge "):
         return "none"
@@ -255,6 +277,20 @@ def classify_commit_for_release(repo_root: Path, commit: CommitInfo) -> str:
     return "patch"
 
 
+def _source_classification(commit: CommitInfo) -> str:
+    override = _sequence.metadata(commit.body)[0]
+    breaking = BREAKING_SUBJECT_RE.match(commit.subject) or BREAKING_CHANGE_RE.search(commit.body)
+    if breaking:
+        if override is not None and override != "major":
+            raise ValueError(f"Breaking commit {commit.sha} requires Release-Type: major")
+        return "major"
+    if override is not None:
+        return override
+    # A published revert is a new maintenance outcome; merge-like subjects alone
+    # do not hide ordinary single-parent source changes.
+    return "minor" if re.match(r"^feat(?:\([^)]+\))?:", commit.subject) else "patch"
+
+
 def release_type_required_diagnostics(commits: Iterable[CommitInfo]) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     for commit in commits:
@@ -286,6 +322,7 @@ def _reverted_subject(subject: str) -> str | None:
     if match:
         return match.group(1)
     return None
+
 
 
 def net_unreleased_commits(commits: list[CommitInfo]) -> tuple[list[CommitInfo], list[dict[str, str]]]:
@@ -325,7 +362,13 @@ def version_from_sync_commit(subject: str) -> SemVer | None:
         return None
 
 
-def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
+def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None,
+                 ref: str | None = None, policy: str | None = None) -> dict:
+    from .versioning_policy import plan
+    return plan(repo_root, base=base, head=head, ref=ref, policy=policy)
+
+
+def _plan_version_legacy(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
     resolved_head = resolve_head(repo_root, head)
     base_payload = resolve_base_with_metadata(repo_root, base, resolved_head)
     resolved_base = str(base_payload["base"])
@@ -384,7 +427,9 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     }
 
 
+
 def sync_version_files(repo_root: Path, target_version: str) -> dict:
+    _policy.guard_target(repo_root, target_version)
     return _sync.sync_version_files(repo_root, target_version)
 
 
@@ -395,6 +440,7 @@ def prepare_version_sync_candidate(repo_root: Path, target_version: str) -> dict
     ``--fix``.  The resulting candidate is deliberately left for maintainer
     review and a separate generated-document receipt.
     """
+    _policy.guard_target(repo_root, target_version)
     target = SemVer.parse(target_version)
     changed: list[str] = []
 
@@ -451,6 +497,7 @@ def stage_version_files(repo_root: Path) -> None:
 
 
 def commit_version_sync(repo_root: Path, target_version: str) -> str | None:
+    _policy.guard_target(repo_root, target_version)
     return _sync.commit_version_sync(
         repo_root,
         target_version,
@@ -483,6 +530,9 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
     """
     plan = plan_version(repo_root, base=base, head=head)
     result: dict = {"ok": False, "fixed": False, "commits": [], "plan": plan}
+    if not plan.get("repairable", True):
+        result["reason"] = "invalid_release_history"
+        return result
     if not plan["ok"] and plan.get("release_type_required"):
         result["reason"] = "release_type_required"
         return result

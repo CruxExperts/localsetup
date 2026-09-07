@@ -32,8 +32,8 @@ def framework_version() -> str:
         try:
             raw_version = metadata.version("localsetup")
         except metadata.PackageNotFoundError as exc:
-            raise RuntimeError("unable to determine Localsetup version") from exc
+            raise RuntimeError("unable to determine LocalSetup version") from exc
     try:
         return str(SemVer.parse(raw_version))
     except ValueError as exc:
-        raise RuntimeError(f"invalid Localsetup version: {raw_version!r}") from exc
+        raise RuntimeError(f"invalid LocalSetup version: {raw_version!r}") from exc

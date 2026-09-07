@@ -46,6 +46,9 @@ jobs:
           uv run --frozen python ls/tools/localsetup.py --source-root . generate-docs
           uv run --frozen python ls/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 
+      - name: Validate product branding
+        run: uv run --frozen python ls/tools/validate_branding.py --repo-root . --strict
+
       - name: Check documentation alignment
         run: |
           set +e

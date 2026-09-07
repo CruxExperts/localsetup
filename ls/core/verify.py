@@ -9,6 +9,7 @@ from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, tar
 from .provenance import is_managed_package, package_digest, provenance_report
 from .reference_materializer import validate_materialized_package
 from .registry import load_registry
+from .personal_inventory import personal_inventory
 from .repair_safety import _protected_target_reasons
 from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
@@ -75,11 +76,14 @@ def verify_install(
             if not package_validation["ok"]:
                 issues.extend(f"managed workflow package invalid: {workflow_path}: {issue}" for issue in package_validation["issues"])
 
-    adapters = (
-        adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
-        if platform_ids is not None
-        else recorded_adapter_status(lock, global_root)
+    scope = lock.get("skill_scope", "repo")
+    adapters = [] if scope == "personal" else (
+        recorded_adapter_status(lock, global_root, platform_ids, target_root=attachment_root)
+        if lock or platform_ids is None
+        else adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
     )
+    personal = personal_inventory(repo_root, home, platform_ids, expected=lock.get("personal_adapter_targets", [])) if scope in {"personal", "both"} else {"ok": True, "owners": [], "adapters": [], "issues": []}
+    issues.extend(personal["issues"])
     expected_by_path = {
         str(item.get("path")): item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", [])))
         for item in lock.get("adapter_targets", [])
@@ -90,8 +94,47 @@ def verify_install(
             "expected_packages",
             expected_by_path.get(adapter["repo_path"], lock.get("repo_packages", lock.get("adapter_packages", []))),
         )
+    from .models import PlanAction
+    from .repository_overlap import expected_overlap
+    for adapter in adapters:
+        try:
+            visible = expected_overlap(repo_root, home, attachment_root, PlanAction(
+                "attach_repo_path", Path(adapter["repo_path"]), {
+                    "mode": adapter.get("expected_mode", attach_mode), "global_root": str(global_root),
+                    "packages": adapter["expected_packages"],
+                }))
+            if visible is not None:
+                adapter["requested_packages"] = adapter["expected_packages"]
+                adapter["expected_packages"] = visible
+        except (ValueError, OSError, TypeError, KeyError) as exc:
+            issues.append(f"invalid shared adapter ownership: {exc}")
     platform_rules = {platform.platform_id: platform.verify_rules for platform in load_platforms(repo_root)}
     rule_results: list[dict] = []
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "claude-code" for row in personal["owners"]):
+        from .claude_prerequisite import claude_personal_root
+        prerequisite = claude_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "gemini-cli" for row in personal["owners"]):
+        from .gemini_prerequisite import gemini_personal_root
+        prerequisite = gemini_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "openclaw" for row in personal["owners"]):
+        from .openclaw_prerequisite import openclaw_personal_root
+        prerequisite = openclaw_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "kimi-cli" for row in personal["owners"]):
+        from .kimi_prerequisite import kimi_personal_root
+        prerequisite = kimi_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if "goose-cli" in lock.get("platforms", []) and (platform_ids is None or "goose-cli" in platform_ids):
+        from .goose_prerequisite import goose_skills_configuration
+        prerequisite = goose_skills_configuration(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
     for adapter in adapters:
         expected_mode = adapter.get("expected_mode", attach_mode)
         platform_evidence = {
@@ -137,7 +180,7 @@ def verify_install(
         ):
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
         expected_packages = sorted(str(name) for name in adapter.get("expected_packages", []) if name)
-        if expected_packages:
+        if expected_packages or "requested_packages" in adapter:
             visible_packages = sorted(str(name) for name in adapter.get("managed_visible_packages", adapter.get("visible_packages", [])))
             ok = visible_packages == expected_packages
             rule_results.append(
@@ -213,7 +256,7 @@ def verify_install(
 
     historical_transitions: dict[str, list[dict]] = {}
     requested_platforms = set(platform_ids) if platform_ids is not None else None
-    installed_platforms = set(lock.get("platforms", []))
+    installed_platforms = set(lock.get("platforms", [])) if scope != "personal" else set()
     for platform_id, transitions in HISTORICAL_ADAPTERS.items():
         rows: list[dict] = []
         for transition in transitions:
@@ -230,7 +273,18 @@ def verify_install(
                 or state.get("managed_visible_packages")
             )
             in_scope = requested_platforms is None or platform_id in requested_platforms
+            current_owned = False
             if platform_id in installed_platforms and in_scope and managed_exposure:
+                from .historical_ownership import retained_historical_action
+                try:
+                    retained = retained_historical_action(repo_root, home, attachment_root, historical_path, global_root)
+                    if retained is not None:
+                        current = personal_inventory(repo_root, home)
+                        current_owned = (set(state.get('managed_visible_packages', [])) == set(retained[1])
+                                         and any(row['path'] == str(historical_path) and row['ok'] for row in current['adapters']))
+                except (ValueError, OSError, TypeError, KeyError) as exc:
+                    issues.append(f'Invalid current ownership at historical adapter: {exc}')
+            if platform_id in installed_platforms and in_scope and managed_exposure and not current_owned:
                 display = "Codex" if platform_id == "codex" else "OpenClaw" if platform_id == "openclaw" else platform_id
                 issues.append(
                     f"legacy {display} adapter still exposes LocalSetup-managed entries: {historical_path}"
@@ -240,6 +294,7 @@ def verify_install(
                     "id": transition["id"],
                     "path": str(historical_path),
                     "managed_exposure": managed_exposure,
+                    "current_owner_exposure": current_owned,
                     "custom_entries": state.get("custom_entries", []),
                     "recorded": lock.get("adapter_transitions", []),
                 }
@@ -261,10 +316,21 @@ def verify_install(
         target_root=attachment_root,
     )
 
+    from .opencode_preflight import opencode_verification_blockers
+    issues.extend(row["reason"] for row in opencode_verification_blockers(
+        repo_root, home, attachment_root, scope, platform_ids))
+    from .kilo_loading import kilo_loading_assessment
+    native_loading = kilo_loading_assessment(attachment_root, adapters, personal)
+    from .openclaw_loading import openclaw_loading_assessment
+    native_loading.extend(openclaw_loading_assessment(attachment_root, adapters, personal))
+    native_warnings = [row["reason"] for row in native_loading
+                       if row["status"] == "unsupported-project-source"]
+
     return {
         "ok": not issues,
         "issues": issues,
-        "warnings": tmux_terminal_mode["warnings"],
+        "warnings": [*tmux_terminal_mode["warnings"], *native_warnings],
+        "native_loading": native_loading,
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],
@@ -272,6 +338,7 @@ def verify_install(
         "tmux_terminal_mode_warnings": tmux_terminal_mode["warnings"],
         "tmux_terminal_mode_repair_hints": tmux_terminal_mode["repair_hints"],
         "adapters": adapters,
+        "personal": personal,
         "level": level,
         "rules": rule_results,
         "legacy_codex_transition": legacy_codex_transition,

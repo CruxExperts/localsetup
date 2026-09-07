@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/pack.schema.json",
-  "title": "Localsetup pack manifest",
+  "title": "LocalSetup pack manifest",
   "type": "object",
   "additionalProperties": false,
   "required": [

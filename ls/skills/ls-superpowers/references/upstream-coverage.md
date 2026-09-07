@@ -9,10 +9,10 @@ Summary:
 - Commit: `d884ae04edebef577e82ff7c4e143debd0bbec99`
 - License: `MIT`
 - Inventoried upstream `SKILL.md` files: `14`
-- Active Localsetup imports from this wave: `ls-requesting-code-review`
+- Active LocalSetup imports from this wave: `ls-requesting-code-review`
 - Inert upstream source copies: `references/upstream/*/*.source.md`
 
-Upstream scripts, hooks, plugins, tests, package metadata, webserver tooling, and symlinks are intentionally excluded from active Localsetup runtime surfaces.
+Upstream scripts, hooks, plugins, tests, package metadata, webserver tooling, and symlinks are intentionally excluded from active LocalSetup runtime surfaces.
 
 ## Selective archive boundary
 
@@ -24,8 +24,8 @@ auxiliary files that were intentionally not imported.
 For example, the subagent-driven-development snapshot refers to
 `skills/requesting-code-review/code-reviewer.md` at the pinned commit above.
 That auxiliary prompt is outside this archive's imported set. It is not a missing
-Localsetup runtime component: active review uses `ls-requesting-code-review` and
-the router's Localsetup-native workflow destinations.
+LocalSetup runtime component: active review uses `ls-requesting-code-review` and
+the router's LocalSetup-native workflow destinations.
 
 The strict active-document audit excludes these `*.source.md` snapshots while
 still checking authored coverage notes and ordinary references. Archive integrity

@@ -26,4 +26,4 @@ Use this skill when working on Tailwind CSS tasks.
 ## Provenance
 
 - Source classification: `official-docs-reference`
-- This is a Localsetup-native skill written from project workflow requirements and public/official documentation routing.
+- This is a LocalSetup-native skill written from project workflow requirements and public/official documentation routing.

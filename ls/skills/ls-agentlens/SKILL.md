@@ -3,7 +3,7 @@ name: ls-agentlens
 description: Navigate and understand codebases using agentlens hierarchical documentation. Use when exploring new projects, finding modules, locating symbols in large files, finding TODOs/warnings, or understanding code structure.
 metadata:
   version: "1.0"
-compatibility: "Requires an existing .agentlens/ tree in the target repo. Localsetup does not ship an AgentLens generator or agentlens command."
+compatibility: "Requires an existing .agentlens/ tree in the target repo. LocalSetup does not ship an AgentLens generator or agentlens command."
 ---
 
 # AgentLens - Codebase Navigation
@@ -13,7 +13,7 @@ Always start by reading `.agentlens/INDEX.md` for the project map. If the target
 
 ## Generation Requirement
 
-This skill consumes AgentLens documentation but does not generate it. Localsetup does not include an `agentlens` CLI, script, or wrapper for regenerating `.agentlens/` output.
+This skill consumes AgentLens documentation but does not generate it. LocalSetup does not include an `agentlens` CLI, script, or wrapper for regenerating `.agentlens/` output.
 
 - If the target repo already documents an AgentLens generation command, run that project-provided command from the target repo root.
 - If an external `agentlens` command is installed in the environment, use the command and flags documented by that external tool.

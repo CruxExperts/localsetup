@@ -28,7 +28,59 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
+    from .mutable_ownership import require_owned_copies
+    try:require_owned_copies(repo_root, home, [a.path for a in plan.actions], target=target_root or repo_root)
+    except ValueError as exc:
+        blockers.append({"path": str(target_root or repo_root), "status_code": "mutable_copy_preservation", "reason": str(exc)})
+    from .hermes_adapter import hermes_adapter_blockers
+    blockers.extend(hermes_adapter_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .claude_prerequisite import claude_prerequisite_blockers
+    blockers.extend(claude_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .gemini_prerequisite import gemini_prerequisite_blockers
+    blockers.extend(gemini_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .openclaw_prerequisite import openclaw_prerequisite_blockers
+    blockers.extend(openclaw_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .kimi_prerequisite import kimi_prerequisite_blockers
+    blockers.extend(kimi_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .factory_preflight import factory_skill_blockers
+    blockers.extend(factory_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .amp_preflight import amp_skill_blockers
+    blockers.extend(amp_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .opencode_preflight import opencode_skill_blockers
+    blockers.extend(opencode_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .goose_prerequisite import goose_prerequisite_blockers
+    blockers.extend(goose_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    import hashlib
+    for raw_path, expected in plan.rollback_metadata.get("recorded_state_hashes", {}).items():
+        try:unchanged = hashlib.sha256(Path(raw_path).read_bytes()).hexdigest() == expected
+        except OSError:unchanged = False
+        if not unchanged:
+            blockers.append({"path": raw_path, "status_code": "stale_recorded_plan",
+                             "reason": "recorded ownership changed; rebuild the update plan"})
+    from .personal_registry import validate_personal_selection_consistency
+    try:
+        validate_personal_selection_consistency([
+            action.details for action in plan.actions if action.kind == "attach_personal_path"
+        ])
+    except ValueError as exc:
+        blockers.append({"path": str(target_root or repo_root),
+                         "status_code": "personal_selection_conflict", "reason": str(exc)})
+    from .adapter_coalescing import paired_repository_actions
+    try:pairs = paired_repository_actions(plan)
+    except ValueError as exc:
+        return {"ok": False, "blockers": [*blockers, {"path": str(target_root or repo_root),
+                "status_code": "overlapping_scope_actions", "reason": str(exc)}]}
     for action in plan.actions:
+        if action.kind == "attach_personal_path":
+            from .personal_adapter import selection
+            pair = pairs.get(action.path)
+            retiring = any(a.kind == 'retire_historical_adapter' and a.path == action.path for a in plan.actions)
+            try:selection(repo_root, home, action,
+                          repository_target=(target_root or repo_root) if pair or retiring else None,
+                          repository_packages=pair.details.get("packages", []) if pair else [] if retiring else None)
+            except (ValueError, OSError) as exc:
+                blockers.append({"path": str(action.path), "status_code": "personal_adapter_unsafe", "reason": str(exc)})
+            continue
         if action.kind in {"install_skills", "install_workflows"}:
             source_subdir = "skills" if action.kind == "install_skills" else "workflows"
             names = action.details.get("skills", action.details.get("workflows", []))
@@ -87,6 +139,13 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         }
                     )
         elif action.kind == "attach_repo_path":
+            if action.path in pairs:continue
+            from .repository_overlap import check_overlap
+            try:
+                if check_overlap(repo_root, home, target_root or repo_root, action):continue
+            except (ValueError, OSError) as exc:
+                blockers.append({"path": str(action.path), "status_code": "personal_owner_overlap", "reason": str(exc)})
+                continue
             global_root = Path(action.details["global_root"])
             state = adapter_path_state(
                 action.path,
@@ -109,11 +168,21 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                     {
                         "path": str(action.path),
                         "status_code": "adapter_custom_package_name_collision",
-                        "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
+                        "reason": "adapter contains custom or unknown entries with selected LocalSetup package names",
                         "entries": unsafe_entries,
                     }
                 )
         elif action.kind == "retire_historical_adapter":
+            if any(a.kind == 'attach_personal_path' and a.path == action.path for a in plan.actions):
+                continue
+            from .historical_ownership import retained_historical_action
+            try:
+                retained = retained_historical_action(repo_root, home, target_root or repo_root,
+                                                      action.path, Path(action.details['global_root']))
+                if retained is not None:continue
+            except (ValueError, OSError, TypeError, KeyError) as exc:
+                blockers.append({'path': str(action.path), 'status_code': 'historical_current_owner', 'reason': str(exc)})
+                continue
             global_root = Path(action.details["global_root"])
             state = adapter_path_state(
                 action.path,

@@ -134,3 +134,18 @@ def archive_legacy_lockfile(legacy_lockfile: Path, attachment_root: Path, txid: 
     if backup is not None:
         remove_legacy_lockfile(legacy_lockfile)
     return backup
+
+
+def record_node_state(journal: dict, journal_path: Path, path: Path, replace_func) -> None:
+    """Back up one managed package node without snapshotting its shared parent."""
+    if not path.is_dir() or path.is_symlink():
+        record_file_state(journal, journal_path, path, replace_func)
+        return
+    if any(item.get("kind") == "file_state" and item.get("path") == str(path)
+           for item in journal.get("touched", [])):
+        return
+    backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
+    shutil.copytree(path, backup, symlinks=True)
+    journal.setdefault("touched", []).append(
+        {"kind": "file_state", "path": str(path), "backup": str(backup), "existed": True})
+    write_journal(journal_path, journal)

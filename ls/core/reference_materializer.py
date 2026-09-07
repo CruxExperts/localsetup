@@ -107,7 +107,7 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
         if kind in {"doc", "tool"}:
             token_path = _normalize_resolver_doc_remainder(remainder) if kind == "doc" else remainder
             try:
-                validate_repo_relative_path(token_path, f"localsetup token {kind}")
+                validate_repo_relative_path(token_path, f"LocalSetup token {kind}")
             except PathValidationError:
                 return ClassifiedReference(raw, raw, "blocked_escape", "unsafe resolver token path")
             if kind == "doc":
@@ -116,9 +116,9 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
             return ClassifiedReference(raw, raw, "runtime_resolved", "resolver token")
         package, _package_sep, package_rel = remainder.partition("/")
         try:
-            validate_repo_relative_path(package, "localsetup token package")
+            validate_repo_relative_path(package, "LocalSetup token package")
             if package_rel:
-                validate_repo_relative_path(package_rel, "localsetup token package path")
+                validate_repo_relative_path(package_rel, "LocalSetup token package path")
         except PathValidationError:
             return ClassifiedReference(raw, raw, "blocked_escape", "unsafe resolver token path")
         return ClassifiedReference(raw, raw, "runtime_resolved", "resolver token")
@@ -966,7 +966,7 @@ def validate_materialized_package(
             normalized = _normalized_framework_source_path(raw_path)
             if normalized in allowed_source_metadata:
                 continue
-            issues.append(f"forbidden Localsetup path reference in {text_path.relative_to(package_root)}: {raw_path}")
+            issues.append(f"forbidden LocalSetup path reference in {text_path.relative_to(package_root)}: {raw_path}")
         for owned_root_path in localsetup_roots:
             owned_root_text = str(owned_root_path)
             cursor = 0
@@ -984,12 +984,12 @@ def validate_materialized_package(
                     source_root = (repo_root / "ls").resolve(strict=False)
                     resolved_candidate = candidate.resolve(strict=False)
                     if resolved_candidate == source_root or source_root in resolved_candidate.parents:
-                        issues.append(f"unrecorded Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+                        issues.append(f"unrecorded LocalSetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
                         continue
                 if _existing_prefix(candidate, root_text=owned_root_text) is not None:
                     continue
                 if not candidate.exists():
-                    issues.append(f"dangling Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+                    issues.append(f"dangling LocalSetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
         for match in ABSOLUTE_PATH_RE.finditer(text):
             raw_candidate = match.group(0).rstrip(".,;:]}>)")
             if raw_candidate.startswith(("/path/to/", "/example/", "/your/", "/ls", "/.local/")):
@@ -1003,7 +1003,7 @@ def validate_materialized_package(
             if _is_allowed_runtime_path(str(candidate), allowed_runtime_paths):
                 continue
             if (source_owned or owned_root) and candidate.exists():
-                issues.append(f"unrecorded Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+                issues.append(f"unrecorded LocalSetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
             elif source_owned or owned_root:
-                issues.append(f"dangling Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+                issues.append(f"dangling LocalSetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
     return {"ok": not issues, "issues": issues}

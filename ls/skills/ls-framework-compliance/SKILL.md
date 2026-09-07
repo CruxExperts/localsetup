@@ -7,7 +7,7 @@ metadata:
 
 # Framework Compliance
 
-Use this skill when a task affects Localsetup framework behavior, shipped skills, installer/runtime rules, repo documentation, PRDs, or any workflow where rule compliance and traceability matter.
+Use this skill when a task affects LocalSetup framework behavior, shipped skills, installer/runtime rules, repo documentation, PRDs, or any workflow where rule compliance and traceability matter.
 
 ## Pre-Task Flow
 

@@ -1,6 +1,6 @@
 # Validation Checklist
 
-Run this entire checklist from the Localsetup repository root.
+Run this entire checklist from the LocalSetup repository root.
 
 - `uv run --locked python ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --help`
 - `uv run --locked python ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py`

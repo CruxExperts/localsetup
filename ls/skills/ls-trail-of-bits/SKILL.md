@@ -23,7 +23,7 @@ Use this skill when working on Trail of Bits security skills tasks.
 
 ## Workflow
 
-- Do not copy CC-BY-SA-4.0 upstream content into Localsetup skills without preserving attribution and share-alike obligations.
+- Do not copy CC-BY-SA-4.0 upstream content into LocalSetup skills without preserving attribution and share-alike obligations.
 - Use the upstream bundle as a source map for security workflow gaps and route actual implementation through native skills when possible.
 - Security tasks require explicit scope, authorization, and non-destructive validation boundaries.
 

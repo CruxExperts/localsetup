@@ -1,23 +1,23 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-skill-creator
 ---
 
-# Skill interoperability (Localsetup)
+# Skill interoperability (LocalSetup)
 
-**Purpose:** Define the boundary between Agent Skills format compatibility and behavioral portability. Localsetup can import external skills only through its gated import workflow; exporting a framework skill requires target-host adaptation and verification when behavior depends on local paths, tools, sibling skills, runtime dependencies, coordination protocols, or deployment semantics.
+**Purpose:** Define the boundary between Agent Skills format compatibility and behavioral portability. LocalSetup can import external skills only through its gated import workflow; exporting a framework skill requires target-host adaptation and verification when behavior depends on local paths, tools, sibling skills, runtime dependencies, coordination protocols, or deployment semantics.
 
 ## Interoperability principle
 
-- **Format compatibility:** Agent Skills frontmatter and directory shape let a compliant host parse a skill. The `ls-*` prefix is a Localsetup convention, not a format requirement.
+- **Format compatibility:** Agent Skills frontmatter and directory shape let a compliant host parse a skill. The `ls-*` prefix is a LocalSetup convention, not a format requirement.
 - **Behavioral portability:** Parsing does not prove that repository links, sibling handoffs, scripts, dependencies, platform tools, environment providers, coordination protocols, or deployment behavior work in another host. Verify and adapt those boundaries.
 - **External imports:** Never copy an external candidate directly into `ls/skills/`. `ls-skill-importer` owns acquisition, collision decisions, safety screening, and the gated path through vetting, normalization, sandbox testing, canonical copy, and registration.
-- **Workflow packages:** `SKILL.md` follows the Agent Skills format. `workflow.yaml` is Localsetup-specific orchestration metadata and requires explicit target-host support or adaptation.
+- **Workflow packages:** `SKILL.md` follows the Agent Skills format. `workflow.yaml` is LocalSetup-specific orchestration metadata and requires explicit target-host support or adaptation.
 
 ## Using an external skill in this framework (import)
 
-1. Load `ls-skill-importer` with the external URL or local directory and the intended Localsetup purpose.
+1. Load `ls-skill-importer` with the external URL or local directory and the intended LocalSetup purpose.
 2. For pasted content or a single-document URL, preserve the exact bytes in a temporary path and pass the path-based `skill_importer_scan` required by [SKILL_IMPORTING.md](SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url).
 3. Keep the importer as operational owner. Require passing `ls-skill-vetter`, `ls-skill-normalizer`, and `ls-skill-sandbox-tester` evidence before canonical copy or registration. If any result is missing, rejected, unresolved, or untested, stop.
 4. Confirm success only after the importer reports all gate evidence, canonical copy, and registration. Deployment is a separate action.
@@ -31,10 +31,10 @@ owner_skill: ls-skill-creator
 
 ## Using a workflow package elsewhere
 
-Workflow packages need the same export audit. Copying their Agent Skills-shaped content does not transfer Localsetup orchestration semantics.
+Workflow packages need the same export audit. Copying their Agent Skills-shaped content does not transfer LocalSetup orchestration semantics.
 
 - Preserve the directory and `name` field match.
-- Treat `workflow.yaml` as Localsetup-specific metadata unless the target host explicitly supports its contract.
+- Treat `workflow.yaml` as LocalSetup-specific metadata unless the target host explicitly supports its contract.
 - Adapt required documents, sibling workflows, tools, and coordination behavior before use.
 - Run the workflow's real target-host smoke scenario before claiming support.
 
@@ -50,6 +50,6 @@ Workflow packages need the same export audit. Copying their Agent Skills-shaped 
 |-----------|-----------------|
 | **External -> Framework** | Route through `ls-skill-importer`; require vetting, normalization, sandbox testing, canonical copy, and registration evidence. |
 | **Framework -> External** | Audit and adapt host-specific behavior, then run the real target-host smoke scenario. |
-| **Workflow package -> External** | Treat `SKILL.md` as format-compatible and adapt Localsetup-specific metadata and orchestration before testing. |
+| **Workflow package -> External** | Treat `SKILL.md` as format-compatible and adapt LocalSetup-specific metadata and orchestration before testing. |
 
 Agent Skills compliance establishes format compatibility only. Behavioral portability is a separately verified property of a specific target host and scenario.

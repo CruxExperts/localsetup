@@ -1,4 +1,4 @@
-# Localsetup framework source repo
+# LocalSetup framework source repo
 *.backup
 *.local
 .DS_Store
@@ -49,6 +49,8 @@ docs/
 contributions/
 
 # Python
+/build/
+/dist/
 __pycache__/
 *.pyc
 *.pyo
@@ -58,7 +60,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Localsetup install output (machine-local runtime state; never publish)
+# LocalSetup install output (machine-local runtime state; never publish)
 .localsetup/
 localsetup.lock.json
 .codex/skills
@@ -87,7 +89,7 @@ ls/.kilo/
 # Codex CLI context: track the repo guide; generated skills adapter is install output.
 !AGENTS.md
 
-# Localsetup maintainer-private state
+# LocalSetup maintainer-private state
 state/
 .localsetup-maint/boundary.yaml
 .localsetup-maint/config/
@@ -99,3 +101,7 @@ state/
 .localsetup-maint/ui-browser-artifacts/
 .localsetup-maint/ui-browser-profiles/
 .localsetup-maint/ui-browser-sessions/
+
+# Upstream runtime modules named docs are part of the canonical SDK payload.
+!vendor/lscli/pydantic_ai_harness/docs/
+!vendor/lscli/pydantic_ai_harness/experimental/docs/

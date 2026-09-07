@@ -81,7 +81,7 @@ def _conversion_blockers(
                 {
                     "kind": "legacy_global_skill",
                     "path": artifact["path"],
-                    "reason": "legacy global skill is not marked as Localsetup-managed",
+                    "reason": "legacy global skill is not marked as LocalSetup-managed",
                     "remediation": f"move or review {artifact['path']} before conversion",
                 }
             )

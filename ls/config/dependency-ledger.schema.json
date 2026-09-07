@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/dependency-ledger.schema.json",
-  "title": "Localsetup package dependency ledger",
+  "title": "LocalSetup package dependency ledger",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "nodes", "edges"],

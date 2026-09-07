@@ -3,7 +3,7 @@ name: ls-documentation-alignment
 description: "Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass."
 metadata:
   version: "1.0"
-compatibility: "Python 3.12+, PyYAML, Localsetup docs_alignment.py adapter. Generic workflow with Localsetup source-truth defaults."
+compatibility: "Python 3.12+, PyYAML, LocalSetup docs_alignment.py adapter. Generic workflow with LocalSetup source-truth defaults."
 ---
 
 # Documentation alignment
@@ -24,7 +24,7 @@ Use this skill when a repo needs documentation brought back into alignment with 
 
 1. Create or resume a run ledger under `.agents/state/<task-slug>/ledger.md`; the controller assigns one Git-bound task slug for every agent and tool to reuse.
 2. Inventory the repo: public docs, internal docs, generated docs, skills/workflows, assets, CLI commands, CI, and lifecycle metadata.
-3. Map truth sources. For Localsetup, defaults are `VERSION`, `pyproject.toml`, `ls/config/*.yaml`, `ls/skills/*/SKILL.md`, `ls/workflows/*/workflow.yaml`, generated facts, assets, and CI workflows.
+3. Map truth sources. For LocalSetup, defaults are `VERSION`, `pyproject.toml`, `ls/config/*.yaml`, `ls/skills/*/SKILL.md`, `ls/workflows/*/workflow.yaml`, generated facts, assets, and CI workflows.
 4. Delegate scouts when scope is broad:
    - code truth and generator ownership
    - public docs and stale claims
@@ -81,7 +81,7 @@ CI/read-only check:
 uv run --locked python ls/tools/docs_alignment.py --repo-root . check --ci
 ```
 
-Localsetup wrapper:
+LocalSetup wrapper:
 
 ```bash
 uv run --locked python ls/tools/localsetup.py --source-root . docs-align check --ci
@@ -138,3 +138,17 @@ The controller verifies each report and records checkpoints in the ledger.
 ## Documentation Skill Refresh Note
 
 Classification: route docs drift, generated artifact sync, and public documentation alignment here rather than creating a duplicate generic documentation skill.
+
+### Command inventory boundary
+
+The generated inventory's cli_commands lists root `localsetup` command families
+from the canonical ls/core/cli_parser.py builder. Collection parses declarations
+without importing or executing the target source. Missing, malformed, empty or
+nonliteral root declarations fail collection and require an owner update; they
+must not silently produce an empty command inventory. A regression check compares
+the collected names with the actual argparse root choices.
+
+This field does not enumerate nested subcommands, options, delegated LSCli
+commands or their behavior. Audit those against their owning parsers and command
+references during comprehensive documentation alignment. A zero-finding report
+is not proof that every command contract or current documentation claim is covered.

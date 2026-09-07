@@ -35,6 +35,9 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen --all-groups --python python3
 
+      - name: Validate product branding
+        run: uv run --frozen python ls/tools/validate_branding.py --repo-root . --strict
+
       - name: Run docs alignment check
         run: uv run --frozen python ls/tools/docs_alignment.py --repo-root . check --ci
 

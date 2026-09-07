@@ -29,8 +29,8 @@ def _copy_config(tmp_path: Path) -> Path:
 def test_registry_distinguishes_families_variants_and_projection() -> None:
     registry = load_client_registry(ROOT)
 
-    assert len(registry.families) == 9
-    assert len(registry.variants()) == 10
+    assert len(registry.families) == 23
+    assert len(registry.variants()) == 28
     assert registry.variant("cursor", "cursor-agent-cli").data["kind"] == "cli"
     assert registry.variant("cursor", "cursor-ide").data["kind"] == "ide"
     assert [row["id"] for row in platform_rows(registry)] == [
@@ -40,6 +40,20 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "kilo",
         "opencode",
         "openclaw",
+        "github-copilot-cli",
+        "github-copilot-vscode",
+        "cline-cli",
+        "cline-vscode",
+        "amp-cli",
+        "goose-cli",
+        "pi-cli",
+        "hermes-agent",
+        "qwen-code-cli",
+        "kimi-cli",
+        "factory-droid",
+        "antigravity-app",
+        "gemini-cli",
+        "omp-cli",
     ]
 
 
@@ -48,9 +62,9 @@ def test_projection_uses_corrected_codex_and_opencode_paths() -> None:
 
     assert rows["codex"]["repo_paths"] == [".agents/skills"]
     assert rows["codex"]["global_paths"] == ["~/.agents/skills"]
-    assert rows["opencode"]["repo_paths"] == [".opencode/skills"]
-    assert rows["opencode"]["global_paths"] == ["~/.config/opencode/skills"]
-    assert rows["cursor"]["repo_paths"] == [".agents/skills", ".cursor/skills"]
+    assert rows["opencode"]["repo_paths"] == [".agents/skills"]
+    assert rows["opencode"]["global_paths"] == ["~/.agents/skills"]
+    assert rows["cursor"]["repo_paths"] == [".agents/skills"]
     assert rows["openclaw"]["repo_paths"] == [".agents/skills"]
 
 
@@ -160,12 +174,12 @@ def test_registry_preserves_exact_researched_rows_and_is_deeply_immutable() -> N
     )
     assert codex.data["config"]["global"]["paths"] == ("$CODEX_HOME/config.toml",)
     assert antigravity.data["policy"]["repo"]["paths"] == (".agents/rules", ".agent/rules")
-    assert cursor_agent.data["skills"]["global"]["paths"] == ("~/.agents/skills", "~/.cursor/skills")
+    assert cursor_agent.data["skills"]["global"]["paths"] == ("~/.agents/skills", "~/.cursor/skills", "~/.claude/skills", "~/.codex/skills")
     assert kilo.data["config"]["global"]["paths"] == (
         "~/.config/kilo/kilo.json",
         "~/.config/kilo/kilo.jsonc",
     )
-    assert omp.data["config"]["repo"]["paths"] == (".omp/config.yml",)
+    assert omp.data["config"]["repo"]["paths"] == (".omp/settings.json", ".omp/config.yml")
     assert omp.data["permissions"]["status"] == "supported"
     assert antigravity.data["policy"]["repo"]["status"] == "supported"
     assert antigravity.data["insertion"]["repo"]["status"] == "unverified"
@@ -234,3 +248,59 @@ def test_projection_rejects_symlinked_config_parent_escape(tmp_path: Path) -> No
     with pytest.raises(ValueError, match="must not contain symlinks"):
         write_platforms_projection(root, registry)
     assert not destination.exists()
+
+
+def test_aider_instruction_only_profile_does_not_project_skills(tmp_path):
+    from ls.core.plan import build_install_plan
+    registry = load_client_registry(ROOT)
+    row = registry.variant('aider', 'aider').data
+    assert row['executables'] == ('aider',)
+    assert row['integration']['qualification']['host'] == 'not-run'
+    for scope in ('repo', 'global'):
+        assert row['policy'][scope]['status'] == 'settings-only'
+        assert row['insertion'][scope]['collision'] == 'manual'
+        assert row['skills'][scope]['status'] == 'unverified'
+        assert not row['skills'][scope]['paths']
+    assert 'aider' not in {p['id'] for p in platform_rows(registry)}
+    with pytest.raises(ValueError, match='unknown platform selector'):
+        build_install_plan(ROOT, tmp_path / 'home', platform_ids=['aider'])
+    assert not (tmp_path / 'home').exists()
+
+
+def _cursor_preferred_paths(root: Path, repo_paths, global_paths) -> None:
+    import yaml
+    path = root / "ls/config/clients.yaml"
+    data = yaml.safe_load(path.read_text())
+    family = next(f for f in data["families"] if f["id"] == "cursor")
+    row = next(v for v in family["variants"] if v["id"] == "cursor-ide")
+    row["skills"]["repo"]["resolution"] = "aggregate"
+    row["compatibility"]["repo_write_paths"] = repo_paths
+    row["compatibility"]["global_write_paths"] = global_paths
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+
+
+def test_preferred_write_paths_keep_full_discovery_inventory(tmp_path):
+    root = _copy_config(tmp_path)
+    _cursor_preferred_paths(root, [".agents/skills"], ["~/.agents/skills"])
+    registry = load_client_registry(root)
+    variant = registry.variant("cursor", "cursor-ide").data
+    assert variant["skills"]["repo"]["paths"] == (".agents/skills", ".cursor/skills", ".claude/skills", ".codex/skills")
+    assert variant["skills"]["repo"]["resolution"] == "aggregate"
+    row = next(r for r in platform_rows(registry) if r["id"] == "cursor")
+    assert row["repo_paths"] == row["rollback_targets"] == [".agents/skills"]
+    assert row["global_paths"] == ["~/.agents/skills"]
+    write_platforms_projection(root, registry)
+    assert projection_matches(root, registry)
+
+
+@pytest.mark.parametrize("repo_paths,global_paths", [
+    ([], ["~/.agents/skills"]),
+    ([".agents/skills", ".agents/skills"], ["~/.agents/skills"]),
+    (["../outside"], ["~/.agents/skills"]),
+    ([".agents/skills"], ["~/.unknown/skills"]),
+])
+def test_preferred_write_paths_reject_empty_duplicate_or_undeclared_paths(tmp_path, repo_paths, global_paths):
+    root = _copy_config(tmp_path)
+    _cursor_preferred_paths(root, repo_paths, global_paths)
+    with pytest.raises(ClientRegistryError):
+        load_client_registry(root)

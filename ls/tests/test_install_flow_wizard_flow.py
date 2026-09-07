@@ -394,7 +394,7 @@ def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None
     )
 
     assert code == 0
-    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (caller / ".cursor").exists()
 

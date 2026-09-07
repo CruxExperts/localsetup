@@ -100,7 +100,7 @@ def test_candidate_skill_proposal_stdout_and_managed_path_blocking(tmp_path: Pat
     assert code == 1
     assert "# Candidate skill proposal" in output
     assert "Validation: blocked" in output
-    assert "inside managed Localsetup content" in output
+    assert "inside managed LocalSetup content" in output
 
 
 def test_candidate_skill_proposal_output_blocks_adapter_path(tmp_path: Path, capsys) -> None:

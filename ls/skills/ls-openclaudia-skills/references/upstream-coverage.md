@@ -9,9 +9,9 @@
 - Inventoried `SKILL.md` files: `75`
 - Inventory hash: `175993722ba0f4025f71a4894344ef7f53cd5c9b5c9cab43d6c3f222d87595c0`
 
-This package is an inventory wrapper only. The paths below are provenance evidence, not installed, vetted, normalized, or executable Localsetup skills. No upstream tooling, code, scripts, commands, dependencies, or account integrations were installed or executed while refreshing this inventory. GitHub API and immutable raw-file access were read-only provenance retrieval.
+This package is an inventory wrapper only. The paths below are provenance evidence, not installed, vetted, normalized, or executable LocalSetup skills. No upstream tooling, code, scripts, commands, dependencies, or account integrations were installed or executed while refreshing this inventory. GitHub API and immutable raw-file access were read-only provenance retrieval.
 
-To adopt one upstream skill, select that single path and run the Localsetup importer, vetter, normalizer, and sandbox-validation workflow. Do not bypass those boundaries based on its presence here.
+To adopt one upstream skill, select that single path and run the LocalSetup importer, vetter, normalizer, and sandbox-validation workflow. Do not bypass those boundaries based on its presence here.
 
 ## Representative Coverage
 

@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-framework-compliance
 ---
 
@@ -10,7 +10,7 @@ owner_skill: ls-framework-compliance
 
 ## Scope
 
-This document defines a standard environment contract for CLI-based skills in Localsetup:
+This document defines a standard environment contract for CLI-based skills in LocalSetup:
 
 - How tools are installed (pipx vs venv vs system).
 - How binaries are discovered on PATH.

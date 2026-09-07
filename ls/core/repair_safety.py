@@ -29,7 +29,7 @@ def ls_owned_adapter_dir(source_root: Path, path: Path, decisions: list[dict]) -
             {
                 "kind": "adapter_content",
                 "path": str(path),
-                "reason": "adapter directory contains non-Localsetup files",
+                "reason": "adapter directory contains non-LocalSetup files",
                 "values": unmanaged,
                 "required": "move or classify this content before applying repair",
             }
@@ -153,7 +153,7 @@ def _classify_stale_framework(source_root: Path, home: Path, target_root: Path, 
             {
                 "classification": "custom_framework_content",
                 "unknown_entries": unknown,
-                "evidence": ["ls does not match Localsetup framework source shape"],
+                "evidence": ["ls does not match LocalSetup framework source shape"],
             }
         )
         return info
@@ -169,7 +169,7 @@ def _classify_stale_framework(source_root: Path, home: Path, target_root: Path, 
                 "framework_like": True,
                 "unknown_entries": extra_files,
                 "modified_entries": modified_files,
-                "evidence": ["framework-shaped ls differs from the current Localsetup source tree"],
+                "evidence": ["framework-shaped ls differs from the current LocalSetup source tree"],
             }
         )
         return info
@@ -214,7 +214,7 @@ def _protected_source_roots(source_root: Path, home: Path) -> list[dict]:
         {"path": source_root.resolve(strict=False), "reason": "active source root"},
         {
             "path": (home / ".local" / "share" / "localsetup" / "source").resolve(strict=False),
-            "reason": "default managed Localsetup source checkout",
+            "reason": "default managed LocalSetup source checkout",
         },
     ]
     shell_status = shell_registration_status(source_root, home=home)
@@ -223,7 +223,7 @@ def _protected_source_roots(source_root: Path, home: Path) -> list[dict]:
         roots.append(
             {
                 "path": Path(str(recorded_source)).expanduser().resolve(strict=False),
-                "reason": "registered Localsetup shell source checkout",
+                "reason": "registered LocalSetup shell source checkout",
             }
         )
     deduped: list[dict] = []
@@ -244,5 +244,5 @@ def _protected_target_reasons(source_root: Path, home: Path, target_root: Path) 
         if Path(item["path"]).resolve(strict=False) == resolved_target
     ]
     if _source_root_like(target_root):
-        reasons.append("target looks like a Localsetup maintainer/source checkout")
+        reasons.append("target looks like a LocalSetup maintainer/source checkout")
     return sorted(set(reasons))

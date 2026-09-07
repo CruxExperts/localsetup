@@ -294,7 +294,7 @@ def test_doctor_repair_protects_managed_source_checkout_path(tmp_path: Path) -> 
 
     assert report["ok"] is True
     assert report["applied"] is True
-    assert "default managed Localsetup source checkout" in report["detected_shape"]["protected_reasons"]
+    assert "default managed LocalSetup source checkout" in report["detected_shape"]["protected_reasons"]
     assert report["decisions"] == []
     assert (managed_source / "ls" / "core").is_dir()
     assert (managed_source / ".localsetup" / "lock.json").exists()
@@ -311,7 +311,7 @@ def test_doctor_repair_protects_registered_custom_source_checkout(tmp_path: Path
 
     assert report["ok"] is True
     assert report["applied"] is True
-    assert "registered Localsetup shell source checkout" in report["detected_shape"]["protected_reasons"]
+    assert "registered LocalSetup shell source checkout" in report["detected_shape"]["protected_reasons"]
     assert report["decisions"] == []
     assert (registered_source / "ls" / "tools" / "localsetup.py").is_file()
     assert (registered_source / ".localsetup" / "lock.json").exists()

@@ -48,9 +48,8 @@ jobs:
         run: |
           set -euo pipefail
           base_sha="$BEFORE_SHA"
-          if git log -1 --pretty=%s | grep -Eq '^(chore: sync release version |docs: refresh release version artifacts$)'; then
-            base_sha="$(git rev-parse HEAD~2)"
-          fi
+          # This is comparison metadata. The committed release policy selects
+          # the verified arithmetic anchor through the canonical planner.
           if [[ -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
             base_sha="$(git rev-parse HEAD^)"
           fi
@@ -64,6 +63,9 @@ jobs:
           head_sha="${{ steps.release-base.outputs.head-sha }}"
           uv run --frozen python ls/tools/localsetup.py --source-root . version-plan --base "$base_sha" --head "$head_sha"
           uv run --frozen python ls/tools/localsetup.py --source-root . version-sync --check --base "$base_sha" --head "$head_sha"
+
+      - name: Validate product branding
+        run: uv run --frozen python ls/tools/validate_branding.py --repo-root . --strict
 
       - name: Run publish validation
         run: |
@@ -128,6 +130,6 @@ jobs:
               "dist/localsetup-v${version}.tar.gz.sha256" \
               "dist/localsetup-v${version}.tar.gz.cdx.json" \
               --target "$GITHUB_SHA" \
-              --title "Localsetup ${version}" \
-              --notes "Automated release for Localsetup ${version}."
+              --title "LocalSetup ${version}" \
+              --notes "Automated release for LocalSetup ${version}."
           fi

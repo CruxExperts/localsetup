@@ -36,7 +36,7 @@ The framework default is **Python 3.12+**. This skill uses `npm_api.py`, a nativ
 
 ## Prerequisites
 
-- Python 3.12+ on the target machine with `requests` available from the Localsetup uv project environment.
+- Python 3.12+ on the target machine with `requests` available from the LocalSetup uv project environment.
 - Docker and Docker Compose running.
 - NPM deployed in a container; admin API reachable (default: `http://127.0.0.1:81`).
 - A shared Docker network (e.g. `npm_default`) that NPM and all public-facing containers are attached to.

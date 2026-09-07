@@ -1,19 +1,25 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from .framework_version import framework_version
+from .branding import PRODUCT_NAME
 from .repo_profiles import REPO_PROFILES
 
 
 def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_harness_target_flags) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="localsetup")
-    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {framework_version()}")
+    parser.add_argument("-V", "--version", action="version", version=f"{PRODUCT_NAME} {framework_version()}")
     parser.add_argument("--home")
     parser.add_argument("--source-root")
     parser.add_argument("--repo", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--target-directory")
     sub = parser.add_subparsers(dest="cmd")
+
+    sub.add_parser("llm", help="Tool-free completion; see the llm subcommand help")
+    agent_p = sub.add_parser("agent", add_help=False, help="Open LSCli; use localsetup agent --help for commands")
+    agent_p.add_argument("agent_arguments", nargs=argparse.REMAINDER)
 
     plan_p = sub.add_parser("plan")
     add_config_flags(plan_p)
@@ -35,6 +41,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     update_p = sub.add_parser("update")
     add_config_flags(update_p)
     add_selector_flags(update_p)
+    for scope_parser in (plan_p, install_p, update_p):
+        scope_parser.add_argument("--skill-scope", choices=["repo", "personal", "both"],
+                                  help="Choose adapter ownership scope; omission retains recorded scope")
 
     adapters_p = sub.add_parser("adapters")
     adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
@@ -112,7 +121,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     why_p.add_argument("--packs", nargs="*")
     sub.add_parser("graph")
     path_p = sub.add_parser("path")
-    path_p.add_argument("--json", action="store_true", help="Emit all Localsetup resolved paths as JSON")
+    path_p.add_argument("--json", action="store_true", help="Emit all LocalSetup resolved paths as JSON")
     path_sub = path_p.add_subparsers(dest="path_action")
     path_sub.add_parser("source-root")
     path_sub.add_parser("framework-root")
@@ -131,6 +140,11 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     detach_p = sub.add_parser("detach")
     add_config_flags(detach_p)
     detach_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms", required=True)
+    detach_p.add_argument("--skill-scope", choices=["repo", "personal"], default="repo",
+                          help="Ownership to detach; personal scope defaults to a read-only plan")
+    detach_mode = detach_p.add_mutually_exclusive_group()
+    detach_mode.add_argument("--plan", action="store_true", help="Plan personal detach without writes")
+    detach_mode.add_argument("--apply", action="store_true", help="Apply personal detach")
     sbom_p = sub.add_parser("sbom")
     sbom_p.add_argument("--format", choices=["cyclonedx"], default="cyclonedx")
     sbom_p.add_argument("--out", required=True)
@@ -207,6 +221,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     for action_name in ("plan", "init", "status", "budget"):
         action_p = heartbeat_sub.add_parser(action_name)
         add_harness_target_flags(action_p)
+    from .agent.heartbeat_accounting_cli import arguments as accounting_arguments
+    accounting_arguments(heartbeat_sub, add_harness_target_flags)
+    heartbeat_sub.choices["budget"].add_argument("--accounting-root", type=Path)
     for action_name in ("enable", "disable"):
         action_p = heartbeat_sub.add_parser(action_name)
         add_harness_target_flags(action_p)
@@ -216,6 +233,8 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     add_harness_target_flags(run_p)
     run_p.add_argument("--no-agent", action="store_true")
     run_p.add_argument("--force", action="store_true")
+    from .agent.heartbeat_execution_cli import arguments as execution_arguments
+    execution_arguments(run_p)
     finalizer_p = harness_sub.add_parser("repo-finalizer")
     finalizer_sub = finalizer_p.add_subparsers(dest="harness_action", required=True)
     for action_name in ("plan", "status"):

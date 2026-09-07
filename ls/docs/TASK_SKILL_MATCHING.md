@@ -1,10 +1,10 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-task-skill-matcher
 ---
 
-# Task-to-skill matching (Localsetup)
+# Task-to-skill matching (LocalSetup)
 
 **Purpose:** Define how agents map user tasks to installed skills with minimal interruption, plus complementary recommendations from the public skill index.
 

@@ -73,7 +73,7 @@ def check_release_exclusions(repo: Path, artifact: Path | None = None) -> list[d
     findings: list[dict[str, Any]] = []
     missing = sorted(QC_WORKFLOWS - private)
     for path in missing:
-        findings.append(finding("release", "high", f"{path} is not excluded from release artifact", "QC workflows rely on root tools/qc_patrol, which is not part of the Localsetup framework package.", "ls/config/pack.yaml", region=path))
+        findings.append(finding("release", "high", f"{path} is not excluded from release artifact", "QC workflows rely on root tools/qc_patrol, which is not part of the LocalSetup framework package.", "ls/config/pack.yaml", region=path))
     if artifact and artifact.exists():
         with tarfile.open(artifact, "r:*") as tar:
             names = set(tar.getnames())

@@ -17,32 +17,144 @@ platforms:
     rollback_targets: [".claude/skills"]
 
   - id: cursor
-    repo_paths: [".agents/skills", ".cursor/skills"]
-    global_paths: ["~/.agents/skills", "~/.cursor/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".agents/skills", ".cursor/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: kilo
-    repo_paths: [".kilo/skills"]
-    global_paths: ["~/.kilo/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".kilo/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: opencode
-    repo_paths: [".opencode/skills"]
-    global_paths: ["~/.config/opencode/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".opencode/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: openclaw
     repo_paths: [".agents/skills"]
-    global_paths: ["~/.agents/skills", "~/.openclaw/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: github-copilot-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: github-copilot-vscode
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: cline-cli
+    repo_paths: [".cline/skills"]
+    global_paths: ["~/.cline/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".cline/skills"]
+
+  - id: cline-vscode
+    repo_paths: [".cline/skills"]
+    global_paths: ["~/.cline/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".cline/skills"]
+
+  - id: amp-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: goose-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls", "goose_skills_configured"]
+    rollback_targets: [".agents/skills"]
+
+  - id: pi-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: hermes-agent
+    repo_paths: [".hermes/skills"]
+    global_paths: ["~/.hermes/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".hermes/skills"]
+
+  - id: qwen-code-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: kimi-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: factory-droid
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: antigravity-app
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.gemini/config/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: gemini-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]
+
+  - id: omp-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]

@@ -15,7 +15,7 @@ PatchMon is optional for dashboard visibility. The bundled helper does not read 
 
 ## Install Location
 
-In Localsetup, the canonical source path is:
+In LocalSetup, the canonical source path is:
 
 ```text
 ls/skills/ls-linux-patcher/

@@ -121,7 +121,7 @@ python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --json
 python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --refresh --json
 ```
 
-Run these repository validation commands from the Localsetup repository root.
+Run these repository validation commands from the LocalSetup repository root.
 For an installed copy of the skill, run the equivalent `scripts/...` path from
 the `ls-shadcn-ui` skill directory. The default verifier path is offline and
 uses only the Python standard library to check skill structure. `--refresh`

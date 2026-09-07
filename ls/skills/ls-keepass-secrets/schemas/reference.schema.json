@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Localsetup secret reference",
+  "title": "LocalSetup secret reference",
   "description": "Accepted forms: Secret ID line, template reference, or secret:// URI.",
   "oneOf": [
     {

@@ -135,6 +135,7 @@ def _is_private_runtime_path(rel: Path) -> bool:
     return any(rel.parts[: len(prefix)] == prefix for prefix in PRIVATE_RUNTIME_PREFIXES)
 
 
+sys.path.insert(0, str(_select_framework_root().parent))
 sys.path.insert(0, str(_select_framework_root() / "lib"))
 from deps import require_deps  # noqa: E402
 
@@ -382,11 +383,15 @@ def phase_version_facts(root: Path) -> tuple[list[str], list[str]]:
 
 
 def phase_maintainer_refs(root: Path) -> list[str]:
+    from audit_links import is_non_authored_source, source_ownership
+
+    upstream, _ = source_ownership(root)  # Link phase reports verification errors.
     findings: list[str] = []
     for md in root.rglob("*.md"):
         try:
             rel = md.relative_to(root)
-            if "_generated" in rel.parts or _is_private_runtime_path(rel):
+            if ("_generated" in rel.parts or _is_private_runtime_path(rel)
+                    or is_non_authored_source(rel, upstream)):
                 continue
             text = md.read_text(encoding="utf-8", errors="replace")
         except (OSError, ValueError):

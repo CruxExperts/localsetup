@@ -1,5 +1,5 @@
 #!/bin/bash
-# Localsetup - Path resolution (repo-local by default)
+# LocalSetup - Path resolution (repo-local by default)
 # When deployed, framework is at ls/framework; set LOCALSETUP_PROJECT_ROOT to client repo root for repo-local user data.
 
 get_user_home() {

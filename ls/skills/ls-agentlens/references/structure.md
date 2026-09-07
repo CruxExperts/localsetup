@@ -19,7 +19,7 @@ This layout follows the current [upstream README hierarchy](https://github.com/n
 
 ## Lifecycle
 
-The `.agentlens/` tree is target-repo documentation produced outside this skill. Localsetup does not ship or install an AgentLens generator.
+The `.agentlens/` tree is target-repo documentation produced outside this skill. LocalSetup does not ship or install an AgentLens generator.
 
 Use the tree as follows:
 

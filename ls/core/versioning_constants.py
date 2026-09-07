@@ -1,4 +1,4 @@
-"""Constants for Localsetup version planning and sync."""
+"""Constants for LocalSetup version planning and sync."""
 
 from __future__ import annotations
 

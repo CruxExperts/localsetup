@@ -56,7 +56,7 @@ def make_repo(tmp_path: Path) -> tuple[Path, Path]:
     repo.mkdir()
     home.mkdir()
     (repo / "README.md").write_text(
-        "# Localsetup Demo\n\nInstall workflow context and vector search notes live here.\n",
+        "# LocalSetup Demo\n\nInstall workflow context and vector search notes live here.\n",
         encoding="utf-8",
     )
     (repo / "src").mkdir()
@@ -295,7 +295,7 @@ def test_ingest_search_lookup_freshness_and_rebuild(tmp_path: Path) -> None:
     assert vector_apply["rebuilt_vectors"] >= 2
 
     (repo / "README.md").write_text(
-        "# Localsetup Demo\n\nInstall workflow context changed after ingest.\n",
+        "# LocalSetup Demo\n\nInstall workflow context changed after ingest.\n",
         encoding="utf-8",
     )
     stale = run_context(repo, home, "stale-files")

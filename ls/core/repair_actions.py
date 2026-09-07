@@ -108,7 +108,7 @@ def _plan_actions(
                     "kind": "stale_framework",
                     "code": "custom_framework_content",
                     "path": str(stale_framework),
-                    "reason": "ls does not look like Localsetup framework source",
+                    "reason": "ls does not look like LocalSetup framework source",
                     "values": stale_framework_info.get("unknown_entries", []),
                     "required": "review this directory before repair can remove it",
                     "prompt_hint": "Preserve or migrate custom ls content before running repair.",
@@ -160,7 +160,7 @@ def _plan_actions(
                 {
                     "kind": "stale_framework",
                     "path": str(stale_framework),
-                    "reason": "ls does not look like Localsetup framework source",
+                    "reason": "ls does not look like LocalSetup framework source",
                     "required": "review this directory before repair can remove it",
                 }
             )
@@ -182,7 +182,7 @@ def _plan_actions(
                 {
                     "kind": "adapter_content",
                     "path": str(path),
-                    "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
+                    "reason": "adapter contains custom or unknown entries with selected LocalSetup package names",
                     "values": sorted(same_name_custom),
                     "required": "move or rename this content before doctor repair can recreate the adapter",
                 }
@@ -191,7 +191,7 @@ def _plan_actions(
         reason = state["collision_reason"]
         if reason in {"dangling symlink"}:
             if _symlink_target_under_managed_roots(path, managed_roots):
-                actions.append(_action("backup_remove_adapter", path, safety="safe", reason=f"repairable Localsetup-owned adapter collision: {reason}"))
+                actions.append(_action("backup_remove_adapter", path, safety="safe", reason=f"repairable LocalSetup-owned adapter collision: {reason}"))
                 pre_action_count += 1
             else:
                 decisions.append(
@@ -209,7 +209,7 @@ def _plan_actions(
                         "backup_remove_adapter",
                         path,
                         safety="safe",
-                        reason="adapter directory contains only Localsetup-owned or alias-mappable packages but lacks marker",
+                        reason="adapter directory contains only LocalSetup-owned or alias-mappable packages but lacks marker",
                     )
                 )
                 pre_action_count += 1
@@ -228,7 +228,7 @@ def _plan_actions(
                     "remove_managed_adapter_entries",
                     path,
                     safety="safe",
-                    reason="refresh Localsetup-managed adapter metadata and package entries while preserving custom content",
+                    reason="refresh LocalSetup-managed adapter metadata and package entries while preserving custom content",
                     details={"packages": packages},
                 )
             )
@@ -263,7 +263,7 @@ def _plan_actions(
                         "remove_managed_adapter_entries",
                         path,
                         safety="safe",
-                        reason=f"retire proven Localsetup-managed entries from historical {platform_id} adapter",
+                        reason=f"retire proven LocalSetup-managed entries from historical {platform_id} adapter",
                         details={"packages": state.get("managed_visible_packages", [])},
                     )
                 )
@@ -317,7 +317,7 @@ def _plan_actions(
                     "install_adapter",
                     target["repo_path"],
                     safety="safe",
-                    reason="create current scoped adapter from inferred Localsetup package selection",
+                    reason="create current scoped adapter from inferred LocalSetup package selection",
                     details={"platform": target["platform"], "mode": attach_mode, "packages": packages},
                 )
             )
@@ -326,7 +326,7 @@ def _plan_actions(
             "write_lock",
             target_root / ".localsetup" / "lock.json",
             safety="safe",
-            reason="record modern Localsetup target state",
+            reason="record modern LocalSetup target state",
         )
     )
     if blockers:

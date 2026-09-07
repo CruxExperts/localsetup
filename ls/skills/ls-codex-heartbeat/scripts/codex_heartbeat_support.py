@@ -7,12 +7,12 @@ import json
 import os
 import shlex
 import shutil
-import signal
-import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from heartbeat_process import execute
 
 try:
     import yaml
@@ -241,6 +241,7 @@ def run_command(
     sidecar_path: Path,
     launcher_info: dict[str, Any] | None = None,
     stdin_text: str | None = None,
+    protocol_options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     started = utc_now()
     entry: dict[str, Any] = {
@@ -252,45 +253,12 @@ def run_command(
     }
     if launcher_info:
         entry.update(launcher_info)
-    proc: subprocess.Popen[str] | None = None
     try:
-        proc = subprocess.Popen(
-            argv,
-            cwd=cwd,
-            shell=False,
-            text=True,
-            stdin=subprocess.PIPE if stdin_text is not None else None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            start_new_session=True,
-        )
-        entry["pid"] = proc.pid
-        try:
-            entry["pgid"] = os.getpgid(proc.pid)
-            entry["sid"] = os.getsid(proc.pid)
-        except OSError:
-            pass
-        try:
-            stdout, stderr = proc.communicate(input=stdin_text, timeout=timeout_seconds)
-            entry["returncode"] = proc.returncode
-            entry["timed_out"] = False
-        except subprocess.TimeoutExpired:
-            entry["timed_out"] = True
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-            except OSError:
-                proc.terminate()
-            try:
-                stdout, stderr = proc.communicate(timeout=5)
-            except subprocess.TimeoutExpired:
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except OSError:
-                    proc.kill()
-                stdout, stderr = proc.communicate()
-            entry["returncode"] = 124
-        entry["stdout_tail"] = _tail(stdout or "")
-        entry["stderr_tail"] = _tail(stderr or "")
+        options = {}
+        if protocol_options is not None:
+            from heartbeat_protocol import Receipt
+            options = {**protocol_options, "receipt": Receipt()}
+        entry.update(execute(argv, cwd=cwd, timeout=timeout_seconds, stdin_text=stdin_text, **options))
         entry["finished_at"] = utc_now()
     except Exception as exc:
         entry.update(
@@ -397,7 +365,7 @@ def _shell_login_command(profile: dict[str, Any], argv: list[str]) -> tuple[list
     return [shell_path, "-lc", rendered], rendered
 
 
-def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
+def load_agent_command(config: dict[str, Any], *, target_root: Path | None = None) -> dict[str, Any] | None:
     if "codex" in config:
         raise HeartbeatError("codex configuration is obsolete; replace it with the agent configuration")
     agent = config.get("agent") if isinstance(config.get("agent"), dict) else {}
@@ -411,6 +379,12 @@ def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
     if not client:
         raise HeartbeatError("agent profile client must be a non-empty label")
     launcher = str(profile.get("launcher") or "resolved-path").strip()
+    if launcher == "lscli":
+        from heartbeat_lscli import plan
+        try:
+            return plan(profile, agent, profile_name, target_root)
+        except (OSError, ValueError, TypeError, RuntimeError) as exc:
+            raise HeartbeatError("LSCli heartbeat profile or registration is unavailable; verify explicit configuration and registration") from exc
     logical_argv, stdin_text, prompt_transport = _prompt_input(profile, _profile_command_argv(profile))
     command = logical_argv
     info: dict[str, Any] = {
@@ -444,12 +418,13 @@ def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def planned_commands(config: dict[str, Any], *, no_agent: bool = False) -> list[dict[str, Any]]:
+def planned_commands(config: dict[str, Any], *, no_agent: bool = False, target_root: Path | None = None) -> list[dict[str, Any]]:
     commands: list[dict[str, Any]] = []
     commands.extend(load_hooks(config, "before"))
-    agent_command = load_agent_command(config)
-    if agent_command and not no_agent:
-        commands.append(agent_command)
+    if not no_agent:
+        agent_command = load_agent_command(config, target_root=target_root)
+        if agent_command:
+            commands.append(agent_command)
     commands.extend(load_hooks(config, "after"))
     return commands
 
@@ -462,7 +437,7 @@ def plan_summary(*, target_root: Path, config_path: Path | None = None, no_agent
     config = load_yaml(config_path)
     summaries: list[dict[str, Any]] = []
     try:
-        planned = planned_commands(config, no_agent=no_agent)
+        planned = planned_commands(config, no_agent=no_agent, target_root=target_root)
     except HeartbeatError as exc:
         return {"ok": False, "commands": [], "config_exists": True, "error": str(exc)}
     for command in planned:

@@ -100,7 +100,7 @@ def paths_manifest_issues(source_root: Path, home: Path) -> list[str]:
 
 def resolve_named_path(source_root: Path, home: Path, name: str) -> Path:
     if name not in PATH_NAMES:
-        raise PathValidationError(f"unknown Localsetup path name: {name}")
+        raise PathValidationError(f"unknown LocalSetup path name: {name}")
     payload = build_paths_manifest(source_root, home)
     return Path(payload["paths"][name])
 

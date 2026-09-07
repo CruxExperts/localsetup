@@ -79,7 +79,7 @@ def test_wizard_semantic_renderer_wraps_paths_and_keeps_text_labels() -> None:
 
     term.step_header("Platforms", progress="Step 3/7")
     term.key_value_block([("Long path", "/tmp/" + "nested/" * 16 + "repo")])
-    term.status_line("ok", "Localsetup installed successfully.")
+    term.status_line("ok", "LocalSetup installed successfully.")
     term.status_line("warn", "Manual dependency setup may still be needed.")
     term.status_line("fail", "A blocker prevents apply.")
     term.action_list(["Attach selected adapter: /tmp/" + "nested/" * 12 + ".codex/skills"])
@@ -88,7 +88,7 @@ def test_wizard_semantic_renderer_wraps_paths_and_keeps_text_labels() -> None:
     rendered = output.getvalue()
     assert "Step 3/7 - Platforms" in rendered
     assert "Long path:" in rendered
-    assert "[OK] Localsetup installed successfully." in rendered
+    assert "[OK] LocalSetup installed successfully." in rendered
     assert "[WARN] Manual dependency setup may still be needed." in rendered
     assert "[FAIL] A blocker prevents apply." in rendered
     assert "[PLAN] Attach selected adapter:" in rendered

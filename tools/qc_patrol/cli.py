@@ -181,7 +181,7 @@ def cmd_autofix(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Localsetup GitHub QC patrol")
+    parser = argparse.ArgumentParser(description="LocalSetup GitHub QC patrol")
     sub = parser.add_subparsers(required=True)
     inventory = sub.add_parser("inventory")
     inventory.add_argument("--repo", default=".")

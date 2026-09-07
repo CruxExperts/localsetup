@@ -1,12 +1,12 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-docs-organization
 ---
 
 # Plugin Packs
 
-Plugin packs are a portable distribution surface for existing Localsetup packs. They do not replace adapter installs; they package selected skills and workflow packages for agent platforms that support plugin-style loading.
+Plugin packs are a portable distribution surface for existing LocalSetup packs. They do not replace adapter installs; they package selected skills and workflow packages for agent platforms that support plugin-style loading.
 
 The first supported platform is Codex. The canonical source is `ls/config/plugin-packs.yaml`; generated catalogs live in `ls/docs/_generated/plugin-packs.json` and `ls/docs/_generated/plugin-packs.md`.
 

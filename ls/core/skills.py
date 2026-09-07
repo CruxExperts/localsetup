@@ -76,7 +76,7 @@ def _candidate_managed_path_findings(repo_root: Path, skill_dir: Path, home: Pat
         )
     for root in managed_roots:
         if _path_under(skill_dir, root):
-            blockers.append(f"candidate path is inside managed Localsetup content: {root}")
+            blockers.append(f"candidate path is inside managed LocalSetup content: {root}")
     adapter_roots = [
         ".agents/skills",
         ".codex/skills",
@@ -185,10 +185,10 @@ def candidate_skill_proposal(repo_root: Path, candidate: Path, *, home: Path | N
     name = candidate_data["name"] or Path(candidate_data["path"]).name
     description = candidate_data["description"] or "(description missing)"
     issue_text = (
-        f"Propose repo-scoped Localsetup skill candidate `{name}`.\n\n"
+        f"Propose repo-scoped LocalSetup skill candidate `{name}`.\n\n"
         f"Summary: {description}\n\n"
         "Requested review:\n"
-        "- Confirm the skill belongs in Localsetup or should remain downstream.\n"
+        "- Confirm the skill belongs in LocalSetup or should remain downstream.\n"
         "- Review validation blockers, warnings, and content-safety references.\n"
         "- Decide separately whether to promote into `ls/skills/`."
     )

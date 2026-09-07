@@ -17,7 +17,7 @@ metadata:
 
 ## Script generation quality
 
-- **Framework tooling default:** New Localsetup framework tooling and substantial refactors must be Python 3.12+ after installation. Shell and PowerShell are limited to install bootstrap, platform entrypoints, host-compatible wrappers, or delegation to Python tooling.
+- **Framework tooling default:** New LocalSetup framework tooling and substantial refactors must be Python 3.12+ after installation. Shell and PowerShell are limited to install bootstrap, platform entrypoints, host-compatible wrappers, or delegation to Python tooling.
 - **Python style:** Use `pathlib` where practical, small helper functions, type hints for public functions and boundaries, context managers, and concise docstrings for non-obvious behavior.
 - **Approved libraries:** Use the repo tooling policy for YAML, HTTP, frontmatter, and crypto dependencies. Do not hand-roll parsers or HTTP clients when an approved dependency covers the need.
 - **Comments:** Explain purpose, usage, parameters, and complex decisions. Avoid comments that restate obvious code.

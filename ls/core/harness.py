@@ -76,9 +76,14 @@ def _target(target_root: Path | None, repo_root: Path) -> Path:
 
 
 def _interval_schedule(minutes: int) -> str:
-    if minutes < 1 or minutes > 1440:
-        raise ValueError("heartbeat.interval_minutes must be in range 1..1440")
-    return f"*/{minutes} * * * *" if minutes < 60 else "0 */1 * * *"
+    if type(minutes) is not int or not 1 <= minutes <= 1440:
+        raise ValueError("heartbeat.interval_minutes must be an integer in range 1..1440")
+    if minutes < 60 and 60 % minutes == 0:
+        return f"*/{minutes} * * * *"
+    if minutes % 60 == 0 and 24 % (minutes // 60) == 0:
+        hours = minutes // 60
+        return "0 0 * * *" if hours == 24 else f"0 */{hours} * * *"
+    raise ValueError("Heartbeat cron requires a minute divisor of 60 or a whole-hour divisor of 24")
 
 
 def _heartbeat_command(repo_root: Path, target_root: Path) -> list[str]:
@@ -136,8 +141,9 @@ def _upsert_cron_manifest(repo_root: Path, target_root: Path, config: dict[str, 
     if not isinstance(triggers, dict):
         triggers = {}
     heartbeat = config.get("heartbeat") if isinstance(config.get("heartbeat"), dict) else {}
-    interval = int(heartbeat.get("interval_minutes") or 15)
-    triggers[HEARTBEAT_TRIGGER_ID] = {"schedule": _interval_schedule(interval)}
+    if enabled or HEARTBEAT_TRIGGER_ID not in triggers:
+        interval = heartbeat.get("interval_minutes", 15)
+        triggers[HEARTBEAT_TRIGGER_ID] = {"schedule": _interval_schedule(interval)}
     manifest["triggers"] = triggers
 
     tasks = manifest.get("tasks")
@@ -407,6 +413,7 @@ def enable(
     heartbeat = config.setdefault("heartbeat", {})
     if not isinstance(heartbeat, dict):
         raise ValueError("heartbeat config must be a mapping")
+    _interval_schedule(heartbeat.get("interval_minutes", 15))
     heartbeat["enabled"] = True
     _write_yaml(target / HEARTBEAT_CONFIG, config)
     cron = _upsert_cron_manifest(repo_root, target, config, enabled=True)

@@ -96,6 +96,7 @@ def test_detach_shared_adapter_preserves_remaining_owner_and_rewrites_lock(tmp_p
     assert lock["platforms"] == ["cursor"]
     shared = next(item for item in lock["adapter_targets"] if item["path"] == str(root / ".agents" / "skills"))
     assert shared["platforms"] == ["cursor"]
+    assert shared["owners"] == [{"scope": "repo", "root": str(root.resolve()), "client": "cursor"}]
     assert verify_install(root, home, platform_ids=["cursor"])["ok"] is True
 
 
@@ -116,13 +117,21 @@ def test_scoped_verify_ignores_other_platform_historical_exposure(tmp_path: Path
     assert verify_install(root, home)["ok"] is False
 
 
-def test_partial_detach_rewrites_registry_adapter_membership(tmp_path: Path) -> None:
+@pytest.mark.parametrize("legacy", [False, True])
+def test_partial_detach_rewrites_registry_adapter_membership(tmp_path: Path, legacy: bool) -> None:
     from ls.core.detach import detach_platforms
     from ls.core.registry import load_registry
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "cursor"]), home=home)
+
+    if legacy:
+        lock_path = root / ".localsetup" / "lock.json"
+        old_lock = load_json(lock_path)
+        for item in old_lock["adapter_targets"]:
+            item.pop("owners", None)
+        lock_path.write_text(json.dumps(old_lock), encoding="utf-8")
 
     detach_platforms(root, home, root, ["codex"])
 
@@ -131,6 +140,7 @@ def test_partial_detach_rewrites_registry_adapter_membership(tmp_path: Path) -> 
     receipt = registry["targets"][str(root.resolve())]
     shared = next(item for item in receipt["adapters"] if item["path"] == str(root / ".agents" / "skills"))
     assert shared["platforms"] == ["cursor"]
+    assert shared["owners"] == [{"scope": "repo", "root": str(root.resolve()), "client": "cursor"}]
     assert all("codex" not in item.get("platforms", []) for item in receipt["adapters"])
 
 

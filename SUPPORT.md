@@ -1,10 +1,10 @@
 # Support
 
-Localsetup support happens through GitHub so project context stays visible and searchable.
+LocalSetup support happens through GitHub so project context stays visible and searchable.
 
 ## Bugs
 
-Use the bug report issue form. Include the Localsetup version, platform ID, command, expected result, actual result, environment, and the shortest useful validation output.
+Use the bug report issue form. Include the LocalSetup version, platform ID, command, expected result, actual result, environment, and the shortest useful validation output.
 
 ## Maintenance and Release Problems
 

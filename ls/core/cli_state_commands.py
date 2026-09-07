@@ -47,7 +47,7 @@ def _adapter_check_commands(platform_ids: list[str] | None, *, has_issues: bool)
             [
                 {
                     "command": f"localsetup doctor repair{selector}",
-                    "reason": "plan or apply existing Localsetup repair behavior after review",
+                    "reason": "plan or apply existing LocalSetup repair behavior after review",
                 },
                 {
                     "command": f"localsetup install{selector}",

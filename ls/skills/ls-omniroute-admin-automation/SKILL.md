@@ -18,7 +18,7 @@ extensions:
 
 Purpose: provide full, automation-first OmniRoute administration workflows with plan/apply safety, drift detection, rollback support, and strict secret handling.
 
-This skill owns every OmniRoute mutation, including context/compression/cache/memory/Qdrant settings; MCP/A2A, CLI-tool, plugin/skill, tunnel and webhook changes; GitHub skill imports; service lifecycle; and purges. Use `ls-omniroute-proxy` for discovery first. Actual skill imports remain governed by Localsetup vetting, normalization, and sandbox-testing policy.
+This skill owns every OmniRoute mutation, including context/compression/cache/memory/Qdrant settings; MCP/A2A, CLI-tool, plugin/skill, tunnel and webhook changes; GitHub skill imports; service lifecycle; and purges. Use `ls-omniroute-proxy` for discovery first. Actual skill imports remain governed by LocalSetup vetting, normalization, and sandbox-testing policy.
 
 ## When to use
 
@@ -68,7 +68,7 @@ Use this skill when a task requires any of the following:
 
 ## Core workflows
 
-Except for the repo-root preflight example below, `scripts/omniroute_admin.py` commands in this skill are package-local examples. From a Localsetup repo root, resolve the installed helper first with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`.
+Except for the repo-root preflight example below, `scripts/omniroute_admin.py` commands in this skill are package-local examples. From a LocalSetup repo root, resolve the installed helper first with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`.
 
 0. Preflight credentials and access before any admin workflow:
    - `python3 "$(python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py)" preflight --required-access read`
@@ -123,7 +123,7 @@ Recommended loop for unattended maintenance:
 
 ## Validation and tests
 
-The following commands assume the current directory is the installed `ls-omniroute-admin-automation` package directory. From a Localsetup repo root, resolve `scripts/omniroute_admin.py` with `localsetup path package` first.
+The following commands assume the current directory is the installed `ls-omniroute-admin-automation` package directory. From a LocalSetup repo root, resolve `scripts/omniroute_admin.py` with `localsetup path package` first.
 
 - Validate scripts:
   - `python3 scripts/omniroute_admin.py validate --desired manifests/example.json`

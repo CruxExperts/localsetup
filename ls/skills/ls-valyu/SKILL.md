@@ -37,7 +37,7 @@ Use this skill when working on Valyu deep search tasks.
 
 ## License Boundary
 
-The upstream repository snapshot did not expose a top-level license file during this run. This skill is Localsetup-native guidance and does not copy upstream body text or bundled assets.
+The upstream repository snapshot did not expose a top-level license file during this run. This skill is LocalSetup-native guidance and does not copy upstream body text or bundled assets.
 
 ## Provenance
 

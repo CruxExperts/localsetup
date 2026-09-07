@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "anchor": {
+    "commit": "1e03acd5a3bb339709cc8edc2596948674f73542",
+    "version": "4.4.0",
+    "tag": "v4.4.0"
+  },
+  "overrides": [
+    {
+      "commit": "99c804b20cc66e42eab25c81d50915951640b6f3",
+      "slice": "doctor-recorded-adapters",
+      "classification": "patch"
+    },
+    {
+      "commit": "8ee908f664eee3987d26a3bae062bbfc168422f3",
+      "slice": "doctor-recorded-adapters",
+      "classification": "patch"
+    },
+    {
+      "commit": "f33464ecc2b913a261ada49c0fdfd009c5fb2868",
+      "slice": "cryptography-maintenance",
+      "classification": "patch"
+    },
+    {
+      "commit": "a97333fefe8147e04dd7e5a8c684a5d64357aa64",
+      "slice": "lscli",
+      "classification": "minor"
+    }
+  ],
+  "policy": "sequential-logical-slices"
+}

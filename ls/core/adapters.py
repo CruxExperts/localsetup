@@ -196,7 +196,7 @@ def _adapter_package_integrity(repo_path: Path, global_root: Path, *, target_roo
             if _is_managed_portable_adapter_entry(child):
                 row["ok"] = True
             elif child.is_dir() and not child.is_symlink():
-                row["reason"] = "portable adapter package lacks Localsetup provenance"
+                row["reason"] = "portable adapter package lacks LocalSetup provenance"
             else:
                 row["reason"] = "portable adapter package is not a directory copy"
         elif child.is_symlink():
@@ -409,7 +409,8 @@ def adapter_path_state(
     is_portable_copy = (
         repo_path.is_dir()
         and not is_symlink
-        and (repo_path / ".localsetup-portable").exists()
+        and (adapter_marker_state(repo_path)["mode"] == "portable"
+             or (repo_path / ".localsetup-portable").exists())
     )
     is_unmanaged_directory = (
         repo_path.is_dir()
@@ -473,7 +474,10 @@ def remove_managed_adapter_entries(
     *,
     known_global_roots: list[Path] | None = None,
     recorded_packages: list[str] | None = None,
+    preserve_directory: bool = False,
 ) -> list[str]:
+    from .mutable_adapters import check_existing
+    check_existing(repo_path)
     removed: list[str] = []
     state = adapter_path_state(repo_path, global_root, known_global_roots=known_global_roots)
     if not (repo_path.exists() or repo_path.is_symlink()):
@@ -510,7 +514,7 @@ def remove_managed_adapter_entries(
             removed.append(str(metadata))
 
     try:
-        if repo_path.exists() and repo_path.is_dir() and not any(repo_path.iterdir()):
+        if not preserve_directory and repo_path.exists() and repo_path.is_dir() and not any(repo_path.iterdir()):
             repo_path.rmdir()
             removed.append(str(repo_path))
     except OSError:
@@ -543,28 +547,50 @@ def adapter_status(
     return status
 
 
-def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
+def recorded_adapter_status(lock: dict, global_root: Path, platform_ids: list[str] | None = None, *, target_root: Path | None = None) -> list[dict]:
     if not isinstance(lock, dict):
         lock = {}
     recorded = lock.get("adapter_targets") if isinstance(lock, dict) else None
-    if not recorded:
+    if "adapter_targets" not in lock:
         recorded = [
-            {"platform": None, "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
+            {"platform": None, "platforms": lock.get("platforms", []), "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
             for path in lock.get("adapter_state", [])
         ]
     statuses: list[dict] = []
     for item in recorded:
+        clients = ([owner['client'] for owner in item['owners'] if owner.get('scope') == 'repo']
+                   if 'owners' in item else item.get('platforms', [item['platform']] if item.get('platform') else []))
+        if platform_ids is not None and not set(clients).intersection(platform_ids):continue
         path = Path(str(item["path"]))
+        root = target_root or (Path(lock['target_root']) if lock.get('target_root') else None)
+        if not path.is_absolute() and root is not None:path = root / path
         expected_global = Path(str(item.get("global_root") or global_root))
         statuses.append(
             {
                 "platform": item.get("platform"),
-                "platforms": item.get("platforms", [item.get("platform")] if item.get("platform") else []),
+                "platforms": clients,
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
                 "expected_packages": item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", []))),
-                **adapter_path_state(path, expected_global, target_root=Path(str(lock.get("target_root"))).resolve(strict=False) if lock.get("target_root") else None),
+                **adapter_path_state(path, expected_global, target_root=root),
                 "verify_rules": item.get("verify_rules", []),
             }
         )
     return statuses
+
+
+def personal_adapter_targets(repo_root: Path, home: Path, platform_ids: list[str] | None) -> list[dict]:
+    """Plan personal discovery paths without inferring any client selection."""
+    from .installation_ownership import InstallationOwner
+    selected = set(validate_platform_selectors(repo_root, platform_ids))
+    targets: dict[Path, dict] = {}
+    for platform in load_platforms(repo_root):
+        if platform.platform_id not in selected:
+            continue
+        for value in platform.global_paths:
+            path = expand_user_path(value, home)
+            target = targets.setdefault(path, {"path": path, "platforms": [], "owners": []})
+            if platform.platform_id not in target["platforms"]:
+                target["platforms"].append(platform.platform_id)
+                target["owners"].append(InstallationOwner("personal", str(home.resolve(strict=False)), platform.platform_id).wire())
+    return sorted(targets.values(), key=lambda target: str(target["path"]))

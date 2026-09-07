@@ -1,6 +1,6 @@
 # ls-context-index
 
-`ls-context-index` is Localsetup's optional context retrieval layer. It keeps files as the source of truth, then builds a disposable SQLite search/cache database so agents can ask deterministic questions before falling back to direct file reads.
+`ls-context-index` is LocalSetup's optional context retrieval layer. It keeps files as the source of truth, then builds a disposable SQLite search/cache database so agents can ask deterministic questions before falling back to direct file reads.
 
 ## What It Provides
 

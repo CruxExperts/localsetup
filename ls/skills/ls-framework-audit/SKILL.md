@@ -22,6 +22,16 @@ compatibility: "Python 3.12+ and PyYAML via the framework dependency helper. Ski
 3. **Report:** Contains every maintainer-reference finding and a `requires_review` / `human_decision` section for items that need user resolution. The script is non-interactive; the agent presents the report and asks the user.
 4. **Doc-only skills:** The smoke list marks them as `N/A`. The script does not run tooling for those. The **agent** (not the script) produces an enumerated one-sentence/paragraph per logical step and flags logic gaps for user resolution, per SKILL.md of each doc-only skill.
 
+## Markdown source ownership
+
+Link and maintainer-reference scans exclude root `build/` and `dist/` outputs.
+Nested authored paths such as `docs/build/` remain in scope. Retained SDK Markdown
+is exempt only when the SDK manifest verifier establishes its exact unchanged
+upstream ownership; there is no blanket `vendor/` exemption. New wrapper documents,
+locally patched Markdown and authored links into retained files remain checked.
+Failed SDK ownership verification is an audit error and grants no exemptions.
+Use the SDK payload validator separately for complete vendored-content integrity.
+
 ## Smoke list (skill matrix)
 
 - **Path:** `ls/tests/skill_smoke_commands.yaml`

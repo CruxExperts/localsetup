@@ -89,7 +89,7 @@ def verify_capabilities(data: dict[str, Any]) -> list[str]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Verify Localsetup's packaged Scrapling capability index.",
+        description="Verify LocalSetup's packaged Scrapling capability index.",
     )
     parser.add_argument(
         "--capabilities",

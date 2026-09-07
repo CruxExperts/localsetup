@@ -12,7 +12,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Localsetup version
+      label: LocalSetup version
       description: Paste the value from `cat VERSION` or the release tag.
       placeholder: "4.0.2 / release tag / commit SHA"
     validations:

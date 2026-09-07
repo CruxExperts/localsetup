@@ -132,7 +132,7 @@ def _target_directory_prompt(term: TerminalWizard) -> str:
             continue
         if lowered in {"d", "details"}:
             _toggle_details(term)
-            term.write("The target directory receives adapter paths and a Localsetup lockfile after the review is applied.")
+            term.write("The target directory receives adapter paths and a LocalSetup lockfile after the review is applied.")
             continue
         return answer
 

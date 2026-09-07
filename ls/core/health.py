@@ -90,7 +90,7 @@ def render_agent_status(summary: dict) -> str:
     warnings = summary.get("warnings") or []
     actions = summary.get("next_actions") or []
     lines = [
-        "# Localsetup Agent Status",
+        "# LocalSetup Agent Status",
         "",
         f"- Status: `{summary.get('status', 'unknown')}`",
         f"- Operation: `{summary.get('operation', 'unknown')}`",
@@ -209,7 +209,7 @@ def read_health_status(*, home: Path, target_root: Path | None = None) -> dict:
     event = load_json(path)
     if event:
         return {"ok": True, "event": event, "git": git_status_snapshot(target_root or Path.cwd())}
-    return {"ok": False, "event": None, "message": "no Localsetup health events recorded"}
+    return {"ok": False, "event": None, "message": "no LocalSetup health events recorded"}
 
 
 def repair_queue(*, home: Path) -> dict:

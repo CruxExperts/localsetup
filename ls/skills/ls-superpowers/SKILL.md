@@ -1,6 +1,6 @@
 ---
 name: ls-superpowers
-description: Use when mapping upstream Superpowers skill names to Localsetup-native skills and workflows without activating duplicate upstream runtime tooling.
+description: Use when mapping upstream Superpowers skill names to LocalSetup-native skills and workflows without activating duplicate upstream runtime tooling.
 metadata:
   version: "1.1"
 extensions:
@@ -19,19 +19,19 @@ extensions:
 # Superpowers Router
 
 This skill is a compact provenance and routing layer for upstream Superpowers release `v6.1.1`.
-Localsetup-native skills remain canonical when workflows overlap.
+LocalSetup-native skills remain canonical when workflows overlap.
 
 ## Routing Matrix
 
-| Upstream Superpowers skill | Localsetup route |
+| Upstream Superpowers skill | LocalSetup route |
 |---|---|
 | `brainstorming` | `ls-workflow-planning-critic-loop` |
-| `dispatching-parallel-agents` | Localsetup controller subagent policy / planning workflow |
-| `executing-plans` | Localsetup controller worker/tester/reviewer flow |
+| `dispatching-parallel-agents` | LocalSetup controller subagent policy / planning workflow |
+| `executing-plans` | LocalSetup controller worker/tester/reviewer flow |
 | `finishing-a-development-branch` | `ls-workflow-repo-finalizer`, `ls-git-workflows`, `ls-github-publishing-workflow` |
 | `receiving-code-review` | `ls-receiving-code-review` |
 | `requesting-code-review` | `ls-requesting-code-review` |
-| `subagent-driven-development` | Localsetup controller subagent policy / `ls-workflow-planning-critic-loop` |
+| `subagent-driven-development` | LocalSetup controller subagent policy / `ls-workflow-planning-critic-loop` |
 | `systematic-debugging` | `ls-debug-pro` |
 | `test-driven-development` | `ls-tdd-guide`, `ls-test-runner` |
 | `using-git-worktrees` | `ls-git-workflows` plus repo single-checkout policy |
@@ -42,14 +42,14 @@ Localsetup-native skills remain canonical when workflows overlap.
 
 ## Import Policy
 
-- Use this skill to translate upstream Superpowers names into Localsetup-native workflows.
+- Use this skill to translate upstream Superpowers names into LocalSetup-native workflows.
 - Do not reimplement TDD, debugging, planning, worktree, review, or subagent orchestration here.
-- Existing Localsetup skills are the active runtime guidance for overlapping workflows.
+- Existing LocalSetup skills are the active runtime guidance for overlapping workflows.
 - The upstream release is kept as inert provenance under [references/upstream/manifest.yaml](./references/upstream/manifest.yaml).
 
 ## Runtime Boundary
 
-Upstream scripts, plugins, hooks, tests, package metadata, webserver tooling, and the staged `AGENTS.md -> CLAUDE.md` symlink are not active Localsetup runtime surfaces.
+Upstream scripts, plugins, hooks, tests, package metadata, webserver tooling, and the staged `AGENTS.md -> CLAUDE.md` symlink are not active LocalSetup runtime surfaces.
 Only inert markdown/license provenance was imported under `references/upstream/`.
 
 ## Provenance
