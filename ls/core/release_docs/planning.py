@@ -48,6 +48,20 @@ def _changed_paths(root: Path, base: str, head: str) -> list[str]:
     return sorted(line for line in result.stdout.splitlines() if line)
 
 
+def _version_metadata_only(before: str, after: str, baseline: str, current: str) -> bool:
+    """Recognize only canonical frontmatter version synchronization, not prose."""
+    def normalized(text: str, version: str) -> str:
+        if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+            return text
+        header, body = text[4:].split("\n---\n", 1)
+        minor = ".".join(version.split(".")[:2])
+        header = re.sub(r"(?m)^version: (?:" + re.escape(version) + "|" + re.escape(minor) + r")$",
+                        "version: RELEASE_METADATA", header)
+        return "---\n" + header + "\n---\n" + body
+    return bool(before and after and before != after and
+                normalized(before, baseline) == normalized(after, current))
+
+
 def _reference_material(root: Path, head: str, version: str, changed: list[str]) -> list[dict[str, str]]:
     """Keep established update guidance available even for code-only releases."""
     references = []
@@ -106,6 +120,12 @@ def plan(root: Path, base: str | None = None, head: str = "HEAD", repair: bool =
     generated_paths = [path for path in all_changed if is_generated_output_path(path)]
     changed_paths = [path for path in all_changed if path not in generated_paths]
     contents = {document: _committed_text(repo_root, source_head, document) for document in documents}
+    baseline_version = str(read_version(repo_root, source_base))
+    metadata_paths = [path for path in changed_paths if path.endswith(".md") and
+                      _version_metadata_only(_committed_text(repo_root, source_base, path),
+                                             contents[path] if path in contents else _committed_text(repo_root, source_head, path),
+                                             baseline_version, current_version)]
+    changed_paths = [path for path in changed_paths if path not in metadata_paths]
     affected: dict[str, list[str]] = {}
     for changed_path in changed_paths:
         matches = [
@@ -131,6 +151,7 @@ def plan(root: Path, base: str | None = None, head: str = "HEAD", repair: bool =
         "baseline_tag": baseline_tag,
         "changed_paths": changed_paths,
         "generated_paths": generated_paths,
+        "version_metadata_paths": metadata_paths,
         "documents": documents,
         "affected_documents": affected,
         "source_material": _source_material(repo_root, source_base, source_head, changed_paths),

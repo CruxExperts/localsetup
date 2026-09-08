@@ -10,6 +10,15 @@ import pytest
 from ls.core.release_docs import check, load_record, plan, render_outputs, tracked_documents, validate_record
 
 
+def test_version_only_frontmatter_is_not_a_new_semantic_change():
+    from ls.core.release_docs.planning import _version_metadata_only
+    before = "---\nversion: 4.22\nstatus: ACTIVE\n---\nKeep this guidance.\n"
+    after = before.replace("version: 4.22", "version: 4.23")
+    assert _version_metadata_only(before, after, "4.22.9", "4.23.0")
+    assert not _version_metadata_only(before, after.replace("Keep", "Change"), "4.22.9", "4.23.0")
+    assert not _version_metadata_only(before, after.replace("4.23", "9.99"), "4.22.9", "4.23.0")
+    assert not _version_metadata_only("", after, "4.22.9", "4.23.0")
+
 def test_semantic_mapping_uses_source_references_not_generic_words_or_doc_links() -> None:
     from ls.core.release_docs.planning import _matches_document
     assert not _matches_document("ls/docs/OTHER.md", "An agent reads content in README.md at VERSION.", "ls/core/release_docs/agent.py")
