@@ -1,6 +1,6 @@
 {
   "generated_facts": {
-    "major_minor": "4.23",
+    "major_minor": "4.25",
     "platform_count": 20,
     "platforms": [
       {
@@ -126,18 +126,18 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "6c8e043e459ccf03935d88436e1357112331d3ac262c2dc706f598e6e27d8052",
+      "artifact_sha256": "d8910a4d5e3424d3357efa036357dd2e6e13486358edef012005be7d1ea120e0",
       "emitter": "generate-docs",
-      "framework_version": "4.23.0",
+      "framework_version": "4.25.0",
       "schema_version": 1,
-      "source_commit": "378f8f2614683b47940f3e691c4a29553de0a016",
-      "source_dirty": false,
-      "source_provenance_hash": "c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4",
-      "source_root_id": "4bfd4b0b42e498daeb256abf92cea88d0a1737229a0312dadac3b13f4647081f",
+      "source_commit": "b31f22a1fa78aafb63dc462182b4f973cec7bff1",
+      "source_dirty": true,
+      "source_provenance_hash": "3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b",
+      "source_root_id": "ad8f5e7dabdc5aee1dcac17ffcf18cc19a73e98e83c954da77a551bad3102835",
       "source_tag": null,
-      "source_tree_sha": "1e888446b79eb5569f3d28a101fa5f5746dec22a"
+      "source_tree_sha": "ded4f3228ee2a53ae1adda95c548b892ee6faec7"
     },
-    "skill_count": 103,
+    "skill_count": 105,
     "skills": [
       {
         "class": "core",
@@ -757,6 +757,23 @@
       },
       {
         "class": "integrations",
+        "id": "ls-backblaze",
+        "name": "ls-backblaze",
+        "owner_scope": "skill",
+        "packs": [
+          "integrations"
+        ],
+        "path": "ls/skills/ls-backblaze/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "backblaze",
+          "storage",
+          "s3"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
         "id": "ls-cloudflare-dns",
         "name": "ls-cloudflare-dns",
         "owner_scope": "skill",
@@ -770,6 +787,23 @@
           "dns"
         ],
         "version": "3.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-garage",
+        "name": "ls-garage",
+        "owner_scope": "skill",
+        "packs": [
+          "integrations"
+        ],
+        "path": "ls/skills/ls-garage/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "garage",
+          "storage",
+          "s3"
+        ],
+        "version": ""
       },
       {
         "class": "integrations",
@@ -1845,7 +1879,7 @@
         "version": "1.0"
       }
     ],
-    "version": "4.23.0",
+    "version": "4.25.0",
     "workflow_count": 16,
     "workflows": [
       {
@@ -1956,19 +1990,19 @@
       "skill-lifecycle",
       "specialized"
     ],
-    "count": 103,
+    "count": 105,
     "provenance": {
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "3d8fb2fccb6f10b0bb39a26f778eabe88ca7c92eafd23341a9d1f296ced6012d",
+      "artifact_sha256": "6dbaf28f6a3169d873c87830a966e298aba185cb24fa376de49f7c60d04288a9",
       "emitter": "generate-docs",
-      "framework_version": "4.23.0",
+      "framework_version": "4.25.0",
       "schema_version": 1,
-      "source_commit": "378f8f2614683b47940f3e691c4a29553de0a016",
-      "source_dirty": false,
-      "source_provenance_hash": "c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4",
-      "source_root_id": "4bfd4b0b42e498daeb256abf92cea88d0a1737229a0312dadac3b13f4647081f",
+      "source_commit": "b31f22a1fa78aafb63dc462182b4f973cec7bff1",
+      "source_dirty": true,
+      "source_provenance_hash": "3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b",
+      "source_root_id": "ad8f5e7dabdc5aee1dcac17ffcf18cc19a73e98e83c954da77a551bad3102835",
       "source_tag": null,
-      "source_tree_sha": "1e888446b79eb5569f3d28a101fa5f5746dec22a"
+      "source_tree_sha": "ded4f3228ee2a53ae1adda95c548b892ee6faec7"
     },
     "schema_version": 1,
     "skills": [
@@ -2516,6 +2550,21 @@
       },
       {
         "class": "integrations",
+        "id": "ls-backblaze",
+        "owner_scope": "skill",
+        "packs": [
+          "integrations"
+        ],
+        "path": "ls/skills/ls-backblaze",
+        "sort_priority": 50,
+        "tags": [
+          "backblaze",
+          "storage",
+          "s3"
+        ]
+      },
+      {
+        "class": "integrations",
         "id": "ls-cloudflare-dns",
         "owner_scope": "skill",
         "packs": [
@@ -2526,6 +2575,21 @@
         "tags": [
           "cloudflare",
           "dns"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-garage",
+        "owner_scope": "skill",
+        "packs": [
+          "integrations"
+        ],
+        "path": "ls/skills/ls-garage",
+        "sort_priority": 50,
+        "tags": [
+          "garage",
+          "storage",
+          "s3"
         ]
       },
       {
@@ -3475,16 +3539,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "0d488112981852032bfb45ef753a118feeadd0dda564ff843cb4af1256bc8f7e",
+    "artifact_sha256": "7e9e9dcc2b800ca849b5e1012dc858f3521ae77f5a3498731cf249841d3cf9f0",
     "emitter": "docs-align",
-    "framework_version": "4.23.0",
+    "framework_version": "4.25.0",
     "schema_version": 1,
-    "source_commit": "378f8f2614683b47940f3e691c4a29553de0a016",
-    "source_dirty": false,
-    "source_provenance_hash": "c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4",
-    "source_root_id": "4bfd4b0b42e498daeb256abf92cea88d0a1737229a0312dadac3b13f4647081f",
+    "source_commit": "b31f22a1fa78aafb63dc462182b4f973cec7bff1",
+    "source_dirty": true,
+    "source_provenance_hash": "3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b",
+    "source_root_id": "ad8f5e7dabdc5aee1dcac17ffcf18cc19a73e98e83c954da77a551bad3102835",
     "source_tag": null,
-    "source_tree_sha": "1e888446b79eb5569f3d28a101fa5f5746dec22a"
+    "source_tree_sha": "ded4f3228ee2a53ae1adda95c548b892ee6faec7"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3735,6 +3799,11 @@
         },
         {
           "owner_package": "",
+          "owner_skill": "ls-backblaze",
+          "path": "ls/docs/STORAGE_SKILLS.md"
+        },
+        {
+          "owner_package": "",
           "owner_skill": "ls-task-skill-matcher",
           "path": "ls/docs/TASK_SKILL_MATCHING.md"
         },
@@ -3880,6 +3949,11 @@
         },
         {
           "owner_package": "",
+          "owner_skill": "ls-github-publishing-workflow",
+          "path": "ls/docs/releases/4.25.0.md"
+        },
+        {
+          "owner_package": "",
           "owner_skill": "ls-automatic-versioning",
           "path": "ls/docs/releases/4.4.0.md"
         },
@@ -3894,7 +3968,7 @@
       "sources": [
         "VERSION"
       ],
-      "value": "4.23"
+      "value": "4.25"
     },
     "platform_count": {
       "sources": [
@@ -3907,7 +3981,7 @@
         "ls/skills/ls-*/SKILL.md",
         "ls/config/pack.yaml"
       ],
-      "value": 103
+      "value": 105
     },
     "skill_taxonomy": {
       "sources": [
@@ -3924,7 +3998,7 @@
           "skill-lifecycle",
           "specialized"
         ],
-        "count": 103,
+        "count": 105,
         "schema_version": 1,
         "skills": [
           {
@@ -4471,6 +4545,21 @@
           },
           {
             "class": "integrations",
+            "id": "ls-backblaze",
+            "owner_scope": "skill",
+            "packs": [
+              "integrations"
+            ],
+            "path": "ls/skills/ls-backblaze",
+            "sort_priority": 50,
+            "tags": [
+              "backblaze",
+              "storage",
+              "s3"
+            ]
+          },
+          {
+            "class": "integrations",
             "id": "ls-cloudflare-dns",
             "owner_scope": "skill",
             "packs": [
@@ -4481,6 +4570,21 @@
             "tags": [
               "cloudflare",
               "dns"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-garage",
+            "owner_scope": "skill",
+            "packs": [
+              "integrations"
+            ],
+            "path": "ls/skills/ls-garage",
+            "sort_priority": 50,
+            "tags": [
+              "garage",
+              "storage",
+              "s3"
             ]
           },
           {
@@ -5430,14 +5534,14 @@
       }
     },
     "version": {
-      "facts_version": "4.23.0",
-      "pyproject_version": "4.23.0",
+      "facts_version": "4.25.0",
+      "pyproject_version": "4.25.0",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "ls/docs/_generated/facts.json"
       ],
-      "value": "4.23.0"
+      "value": "4.25.0"
     },
     "workflow_catalog": {
       "sources": [

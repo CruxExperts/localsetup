@@ -1,20 +1,20 @@
 ---
 status: ACTIVE
-version: 4.23
+version: 4.25
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4
+  source_provenance_hash: 3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b
   emitter: generate-docs
-framework_version: 4.23.0
-source_commit: 378f8f2614683b47940f3e691c4a29553de0a016
-artifact_sha256: 683f7eff259cf08199bda19af4593ef13048e4b34b3962d4c1406b87380009a5
+framework_version: 4.25.0
+source_commit: b31f22a1fa78aafb63dc462182b4f973cec7bff1
+artifact_sha256: 42daa501edf3c708c7507ba1403110a9c5b9a32ab52b89b38da6c3de28e656ba
 ---
 # Shipped skills catalog
 
 This page is generated from `ls/skills/*/SKILL.md`.
 
-Total shipped skills: 103
+Total shipped skills: 105
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -55,7 +55,9 @@ Total shipped skills: 103
 | `ls-system-info` | `operations` | 40 | `ops` | `system`, `diagnostics` | `ls-system-info` | `1.1` | Quick system diagnostics: CPU, memory, disk, uptime. Use when capturing server baseline or recording host layout and specs for further operations. |
 | `ls-omniroute` | `integrations` | 45 | `integrations`, `omniroute` | `omniroute`, `main`, `router` | `ls-omniroute` | `1.1` | Main OmniRoute router for ambiguous first-response triage, environment/API-key/access preflight, and non-mutating client onboarding. Use only before a task is classified; route classified discovery, mutation, and source-coverage work to their focused OmniRoute skills. |
 | `ls-agentq-transport` | `integrations` | 50 | `integrations` | `agentq`, `transport` | `ls-agentq-transport` | `1.0` | Agent Q bidirectional transport client - file_drop ship/ingest, mail pull/ship (including strict gpg preencrypted), registry validation, queue-pending, archive-prune. Use when shipping or ingesting sealed PRD manifests between agents over shared folders or mail; when editing agent_trust_registry, manifest.schema.json, or agentq CLI. |
+| `ls-backblaze` | `integrations` | 50 | `integrations` | `backblaze`, `storage`, `s3` | `ls-backblaze` | `1.0` | Safely plan and execute Backblaze B2 S3-compatible storage operations and B2 native bucket, key, and notification administration. |
 | `ls-cloudflare-dns` | `integrations` | 50 | `integrations` | `cloudflare`, `dns` | `ls-cloudflare-dns` | `3.0` | Use the cf CLI for Cloudflare zones, DNS records, settings, DNSSEC, scans, imports, exports, batches, analytics, and zone transfers. |
+| `ls-garage` | `integrations` | 50 | `integrations` | `garage`, `storage`, `s3` | `ls-garage` | `n/a` | Operate the documented Garage v2.3.0 Admin API allowlist and S3 subset through an offline-first, JSON-only CLI. |
 | `ls-github-starredrepos` | `integrations` | 50 | `integrations` | `github`, `archive` | `ls-github-starredrepos` | `1.0` | Manage a GitHub starred repositories archive named starredrepos with authenticated context checks, dry-run synchronization, repo scouting, metadata snapshots, and guarded publish workflows. |
 | `ls-keepass-secrets` | `integrations` | 50 | `integrations` | `keepass`, `secrets` | `ls-keepass-secrets` | `1.1` | Use when validating logical secret-ID maps, config, and reference syntax for a KeePassXC integration; output is redacted and the fake backend is test-only. |
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |

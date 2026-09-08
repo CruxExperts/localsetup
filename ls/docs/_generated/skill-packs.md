@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4
+  source_provenance_hash: 3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b
   emitter: generate-docs
-framework_version: 4.23.0
-source_commit: 378f8f2614683b47940f3e691c4a29553de0a016
-artifact_sha256: 9c19a1db48f8405359c9bb51e65bc1b3286bae53bc9862f67a747577577485d3
+framework_version: 4.25.0
+source_commit: b31f22a1fa78aafb63dc462182b4f973cec7bff1
+artifact_sha256: abec3bdbb470828a534eef656a77193a4b806cefc88bf7b1cefc3cbbf0740617
 ---
 # Skill And Workflow Packs
 
@@ -48,7 +48,9 @@ artifact_sha256: 9c19a1db48f8405359c9bb51e65bc1b3286bae53bc9862f67a747577577485d
 | `ops` | `skill` | `ls-system-info` | `operations` | 40 | `system, diagnostics` | `localsetup-system-info` |
 | `integrations, omniroute` | `skill` | `ls-omniroute` | `integrations` | 45 | `omniroute, main, router` | `localsetup-omniroute` |
 | `integrations` | `skill` | `ls-agentq-transport` | `integrations` | 50 | `agentq, transport` | `localsetup-agentq-transport` |
+| `integrations` | `skill` | `ls-backblaze` | `integrations` | 50 | `backblaze, storage, s3` | `localsetup-backblaze` |
 | `integrations` | `skill` | `ls-cloudflare-dns` | `integrations` | 50 | `cloudflare, dns` | `localsetup-cloudflare-dns` |
+| `integrations` | `skill` | `ls-garage` | `integrations` | 50 | `garage, storage, s3` | `localsetup-garage` |
 | `integrations` | `skill` | `ls-github-starredrepos` | `integrations` | 50 | `github, archive` | `localsetup-github-starredrepos` |
 | `integrations` | `skill` | `ls-keepass-secrets` | `integrations` | 50 | `keepass, secrets` | `localsetup-keepass-secrets` |
 | `integrations` | `skill` | `ls-mail-protocol-control` | `integrations` | 50 | `mail, protocols` | `localsetup-mail-protocol-control` |

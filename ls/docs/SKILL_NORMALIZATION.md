@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.23
+version: 4.25
 owner_skill: ls-skill-normalizer
 ---
 

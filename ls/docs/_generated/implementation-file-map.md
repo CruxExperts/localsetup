@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4
+  source_provenance_hash: 3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b
   emitter: generate-docs
-framework_version: 4.23.0
-source_commit: 378f8f2614683b47940f3e691c4a29553de0a016
-artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8e
+framework_version: 4.25.0
+source_commit: b31f22a1fa78aafb63dc462182b4f973cec7bff1
+artifact_sha256: 8767b9998b750d46a1b0a6ed3dad376b90f23e1a4370f59e7a23fb70d8332644
 ---
 # Implementation File Map
 
@@ -376,6 +376,10 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `refactor` | `ls/core/repository_overlap.py` |
 | `refactor` | `ls/core/retained_update.py` |
 | `refactor` | `ls/core/rollback.py` |
+| `refactor` | `ls/core/s3_sdk/__init__.py` |
+| `refactor` | `ls/core/s3_sdk/exports.py` |
+| `refactor` | `ls/core/s3_sdk/garage_schema.py` |
+| `refactor` | `ls/core/s3_sdk/responses.py` |
 | `refactor` | `ls/core/schema.py` |
 | `refactor` | `ls/core/scope_migration.py` |
 | `refactor` | `ls/core/scope_retirement.py` |
@@ -491,6 +495,7 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/docs/SKILL_NORMALIZATION.md` |
 | `keep` | `ls/docs/SKILL_VALIDATION_PATTERNS.md` |
 | `keep` | `ls/docs/SKILL_VALIDATION_PATTERNS.yaml` |
+| `keep` | `ls/docs/STORAGE_SKILLS.md` |
 | `keep` | `ls/docs/TASK_SKILL_MATCHING.md` |
 | `keep` | `ls/docs/TMUX_TERMINAL_MODE.md` |
 | `keep` | `ls/docs/TOOLING_POLICY.md` |
@@ -542,6 +547,8 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/docs/releases/4.22.9.md` |
 | `keep` | `ls/docs/releases/4.23.0.json` |
 | `keep` | `ls/docs/releases/4.23.0.md` |
+| `keep` | `ls/docs/releases/4.25.0.json` |
+| `keep` | `ls/docs/releases/4.25.0.md` |
 | `keep` | `ls/docs/releases/4.4.0.md` |
 | `keep` | `ls/docs/scrapling-cheat-sheet.md` |
 | `keep` | `ls/lib/data_paths.sh` |
@@ -597,6 +604,30 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/skills/ls-arbiter/templates/decision.md` |
 | `keep` | `ls/skills/ls-architecture/SKILL.md` |
 | `keep` | `ls/skills/ls-automatic-versioning/SKILL.md` |
+| `keep` | `ls/skills/ls-backblaze/OPERATION_MATRIX.md` |
+| `keep` | `ls/skills/ls-backblaze/SKILL.md` |
+| `keep` | `ls/skills/ls-backblaze/requirements-s3-sdk.txt` |
+| `keep` | `ls/skills/ls-backblaze/scripts/backblaze.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/backblaze_live_smoke.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/__init__.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/cli.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/config.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/downloads.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/encryption.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/native.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/native_permissions.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/native_response_shapes.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/reporting.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/request_shapes.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/responses.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/result_shapes.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/s3-result-shapes.json` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/s3.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/s3_requests.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/schema_validation.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/transfers.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/transport.py` |
+| `keep` | `ls/skills/ls-backblaze/scripts/lib/ls_backblaze/validation.py` |
 | `keep` | `ls/skills/ls-backlog-and-reminders/SKILL.md` |
 | `keep` | `ls/skills/ls-backlog-and-reminders/references/backlog-template.md` |
 | `keep` | `ls/skills/ls-cloudflare-dns/SKILL.md` |
@@ -661,6 +692,35 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/skills/ls-framework-audit/scripts/tests/test_framework_audit_hardening.py` |
 | `keep` | `ls/skills/ls-framework-compliance/SKILL.md` |
 | `keep` | `ls/skills/ls-frontend-design/SKILL.md` |
+| `keep` | `ls/skills/ls-garage/OPERATION_MATRIX.md` |
+| `keep` | `ls/skills/ls-garage/SKILL.md` |
+| `keep` | `ls/skills/ls-garage/references/LICENSE-AGPL-3.0.txt` |
+| `keep` | `ls/skills/ls-garage/references/NOTICE.md` |
+| `keep` | `ls/skills/ls-garage/references/admin-api-v2.schema.json` |
+| `keep` | `ls/skills/ls-garage/references/upstream-admin-api-v2.json.gz` |
+| `keep` | `ls/skills/ls-garage/requirements-s3-sdk.txt` |
+| `keep` | `ls/skills/ls-garage/scripts/garage.py` |
+| `keep` | `ls/skills/ls-garage/scripts/garage_live_smoke.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/__init__.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/admin.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/admin_schema.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/cli.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/config.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/downloads.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/encryption.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/http_transport.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/post.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/reporting.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/responses.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/result_shapes.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/s3-result-shapes.json` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/s3.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/s3_requests.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/schema_validation.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/secret_files.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/storage_shapes.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/transfers.py` |
+| `keep` | `ls/skills/ls-garage/scripts/lib/ls_garage/validation.py` |
 | `keep` | `ls/skills/ls-git-workflows/SKILL.md` |
 | `keep` | `ls/skills/ls-git-workflows/references/rebase-and-bisect.md` |
 | `keep` | `ls/skills/ls-git-workflows/references/repo-structure-and-conflicts.md` |
@@ -1090,6 +1150,16 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/tests/test_antigravity_adapters.py` |
 | `keep` | `ls/tests/test_approvals.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
+| `keep` | `ls/tests/test_backblaze_cli.py` |
+| `keep` | `ls/tests/test_backblaze_matrix.py` |
+| `keep` | `ls/tests/test_backblaze_native_transport.py` |
+| `keep` | `ls/tests/test_backblaze_operations.py` |
+| `keep` | `ls/tests/test_backblaze_protocol.py` |
+| `keep` | `ls/tests/test_backblaze_response_projection.py` |
+| `keep` | `ls/tests/test_backblaze_schema_matrix.py` |
+| `keep` | `ls/tests/test_backblaze_sdk_serialization.py` |
+| `keep` | `ls/tests/test_backblaze_transfer_recovery.py` |
+| `keep` | `ls/tests/test_backblaze_validation.py` |
 | `keep` | `ls/tests/test_bootstrap_profile_binding.py` |
 | `keep` | `ls/tests/test_branding.py` |
 | `keep` | `ls/tests/test_broker_rpc.py` |
@@ -1128,6 +1198,15 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/tests/test_file_listing.py` |
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
+| `keep` | `ls/tests/test_garage_admin.py` |
+| `keep` | `ls/tests/test_garage_cli.py` |
+| `keep` | `ls/tests/test_garage_matrix.py` |
+| `keep` | `ls/tests/test_garage_post_security.py` |
+| `keep` | `ls/tests/test_garage_reliability.py` |
+| `keep` | `ls/tests/test_garage_s3_sdk.py` |
+| `keep` | `ls/tests/test_garage_secret_files.py` |
+| `keep` | `ls/tests/test_garage_transfer_recovery.py` |
+| `keep` | `ls/tests/test_garage_validation.py` |
 | `keep` | `ls/tests/test_gemini_adapters.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_goose_prerequisite.py` |
@@ -1267,6 +1346,7 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/tests/test_runtime_install.py` |
 | `keep` | `ls/tests/test_runtime_integrity.py` |
 | `keep` | `ls/tests/test_runtime_use_lock.py` |
+| `keep` | `ls/tests/test_s3_sdk_exports.py` |
 | `keep` | `ls/tests/test_sandbox_copy.py` |
 | `keep` | `ls/tests/test_scope_migration.py` |
 | `keep` | `ls/tests/test_scope_migration_cli.py` |
@@ -1296,6 +1376,13 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/tests/test_skill_scope_cli.py` |
 | `keep` | `ls/tests/test_skill_scope_config.py` |
 | `keep` | `ls/tests/test_steering.py` |
+| `keep` | `ls/tests/test_storage_admin_schema_source.py` |
+| `keep` | `ls/tests/test_storage_garage_boundaries.py` |
+| `keep` | `ls/tests/test_storage_part_boundaries.py` |
+| `keep` | `ls/tests/test_storage_schema_contracts.py` |
+| `keep` | `ls/tests/test_storage_secret_delivery.py` |
+| `keep` | `ls/tests/test_storage_skill_installation.py` |
+| `keep` | `ls/tests/test_storage_transport_boundaries.py` |
 | `keep` | `ls/tests/test_supervisor_broker.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
@@ -1350,7 +1437,10 @@ artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8
 | `keep` | `ls/tools/context_mcp_server.py` |
 | `keep` | `ls/tools/docs_alignment.py` |
 | `keep` | `ls/tools/generate_docs_artifacts.py` |
+| `keep` | `ls/tools/generate_garage_admin_schema.py` |
+| `keep` | `ls/tools/generate_s3_sdk_requirements.py` |
 | `keep` | `ls/tools/generate_sdk_dependency_locks.py` |
+| `keep` | `ls/tools/generate_storage_sdk_schemas.py` |
 | `refactor` | `ls/tools/localsetup.py` |
 | `keep` | `ls/tools/native_sbom.py` |
 | `keep` | `ls/tools/python_architecture_check.py` |

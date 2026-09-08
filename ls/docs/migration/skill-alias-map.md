@@ -1,14 +1,14 @@
 ---
 status: ACTIVE
-version: 4.23
+version: 4.25
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4
+  source_provenance_hash: 3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b
   emitter: generate-docs
-framework_version: 4.23.0
-source_commit: 378f8f2614683b47940f3e691c4a29553de0a016
-artifact_sha256: 6a24eb979028bd098c1cc7c75976d55a69f6bed872d3e03fce9a2cb322fa40ee
+framework_version: 4.25.0
+source_commit: b31f22a1fa78aafb63dc462182b4f973cec7bff1
+artifact_sha256: 02efb0f3430f9b322336070c7a271a9758c76094668982fc13c8af0f0bda1b0e
 ---
 # Skill Alias Map
 
@@ -25,6 +25,7 @@ artifact_sha256: 6a24eb979028bd098c1cc7c75976d55a69f6bed872d3e03fce9a2cb322fa40e
 | `localsetup-arbiter` | `ls-arbiter` |
 | `localsetup-architecture` | `ls-architecture` |
 | `localsetup-automatic-versioning` | `ls-automatic-versioning` |
+| `localsetup-backblaze` | `ls-backblaze` |
 | `localsetup-backlog-and-reminders` | `ls-backlog-and-reminders` |
 | `localsetup-cloudflare-dns` | `ls-cloudflare-dns` |
 | `localsetup-codex-heartbeat` | `ls-codex-heartbeat` |
@@ -47,6 +48,7 @@ artifact_sha256: 6a24eb979028bd098c1cc7c75976d55a69f6bed872d3e03fce9a2cb322fa40e
 | `localsetup-framework-audit` | `ls-framework-audit` |
 | `localsetup-framework-compliance` | `ls-framework-compliance` |
 | `localsetup-frontend-design` | `ls-frontend-design` |
+| `localsetup-garage` | `ls-garage` |
 | `localsetup-git-workflows` | `ls-git-workflows` |
 | `localsetup-github-actions-builder` | `ls-github-actions-builder` |
 | `localsetup-github-publishing-workflow` | `ls-github-publishing-workflow` |

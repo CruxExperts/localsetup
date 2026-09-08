@@ -213,7 +213,9 @@
       "skills": [
         "ls-omniroute",
         "ls-agentq-transport",
+        "ls-backblaze",
         "ls-cloudflare-dns",
+        "ls-garage",
         "ls-github-starredrepos",
         "ls-keepass-secrets",
         "ls-mail-protocol-control",
@@ -376,16 +378,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "b69f214b8950772a6d88915da5bb3c844c6d823f00a75b63c1e6084fb0bd08e3",
+    "artifact_sha256": "54f601754850c5e8f51027ed61fff37ff8249297447de38eb4c54b752ce6be64",
     "emitter": "generate-docs",
-    "framework_version": "4.23.0",
+    "framework_version": "4.25.0",
     "schema_version": 1,
-    "source_commit": "378f8f2614683b47940f3e691c4a29553de0a016",
-    "source_dirty": false,
-    "source_provenance_hash": "c43a13bf0ad1dcfe77d3a513621ba12b272ef302e60adee9abad16a96e587ae4",
-    "source_root_id": "4bfd4b0b42e498daeb256abf92cea88d0a1737229a0312dadac3b13f4647081f",
+    "source_commit": "b31f22a1fa78aafb63dc462182b4f973cec7bff1",
+    "source_dirty": true,
+    "source_provenance_hash": "3d7439ab2104acc29ae960b7888a4cca46f6b8a39e2596d32a15c203a2d17c2b",
+    "source_root_id": "ad8f5e7dabdc5aee1dcac17ffcf18cc19a73e98e83c954da77a551bad3102835",
     "source_tag": null,
-    "source_tree_sha": "1e888446b79eb5569f3d28a101fa5f5746dec22a"
+    "source_tree_sha": "ded4f3228ee2a53ae1adda95c548b892ee6faec7"
   },
   "schema_version": 1
 }
