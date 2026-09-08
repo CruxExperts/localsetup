@@ -176,10 +176,12 @@ lock changes before installing through the protected runtime owner. The runtime
 receipt records the candidate commit and wheel digest. It does not select new
 dependency versions. Runtime provisioning failure retains evidence and blocks the
 affected run; it is never treated as successful qualification.
-Preparation also enforces a total completion-call budget and a 30-minute model
-deadline, leaving runner time for validation and evidence upload. An oversized
-release stops before publication with an actionable scope/slice error; incomplete
-audits are never recorded as successful coverage.
+Preparation also enforces a total completion-call budget. The hosted release
+workflow allows two hours for model calls inside a 135-minute job, leaving runner
+time for validation and evidence upload. Direct local runs retain the 30-minute
+default unless the caller explicitly configures another positive deadline. An
+oversized release stops before publication with an actionable scope/slice error;
+incomplete audits are never recorded as successful coverage.
 
 On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, verifies the tarball checksum and embedded artifact metadata, uploads the tarball plus `.sha256` and CycloneDX SBOM sidecars, attests the tarball when GitHub artifact attestation is available, and prepares draft release `vX.Y.Z` at the validated commit. Existing tags must already point at that commit. Existing releases and uncertain API lookups stop preparation for explicit reconciliation; reruns never overwrite assets.
 

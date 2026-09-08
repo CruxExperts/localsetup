@@ -27,6 +27,10 @@ def test_prepare_precedes_exact_commit_build_and_repair_skips_build():
     assert "QC_LLM_API_KEY" not in integrated["env"]
     assert "if" not in integrated
     assert 'if [[ "$RELEASE_DOCS_MODE" != qualify ]]; then flags+=(--push); fi' in integrated["run"]
+    assert prepare["timeout-minutes"] == 135
+    assert proposed["env"]["QC_LLM_MAX_CALLS"] == "800"
+    assert proposed["env"]["QC_LLM_TOTAL_DEADLINE_SECONDS"] == "7200"
+    assert proposed["env"]["QC_LLM_TIMEOUT_SECONDS"] == "${{ vars.QC_LLM_TIMEOUT_SECONDS }}"
 
 
 def test_draft_check_rejects_notes_and_asset_drift(monkeypatch, tmp_path):
