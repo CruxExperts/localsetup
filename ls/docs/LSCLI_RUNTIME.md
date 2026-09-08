@@ -1004,6 +1004,12 @@ matching `reasoning:VALUE` capability in the selected profile. For example, `rea
 Declarations record operator-qualified endpoint/model support; they do not prove
 live compatibility. Omitted effort remains omitted from provider requests.
 
+Tool-free completions send `X-OmniRoute-Compression: off` at the final transport
+boundary. This requests full input delivery from compatible OmniRoute gateways:
+these workers cannot retrieve source text replaced by CCR content references.
+The header is scoped to each completion request and does not change shared
+gateway settings, the selected model, or the credential.
+
 The result envelope contains `interface_version`, `status`, `data`, `model`,
 `usage`, `request_id`, `attempts` and a stable `reason` code equal to its status.
 Failure data is always null. Exit codes are: succeeded 0, invalid_request 2,

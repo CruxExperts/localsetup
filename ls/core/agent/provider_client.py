@@ -29,7 +29,11 @@ class BoundTransport(httpx.AsyncBaseTransport):
         })
         for key,value in [('OpenAI-Organization',self.profile.organization),('OpenAI-Project',self.profile.project)]:
             if value:request.headers[key]=value
-        if self.response_guard: request.headers['Accept-Encoding'] = 'identity'
+        if self.response_guard:
+            request.headers['Accept-Encoding'] = 'identity'
+            # Tool-free completions cannot retrieve CCR markers substituted by
+            # a gateway. Preserve their full input at the final send boundary.
+            request.headers['X-OmniRoute-Compression'] = 'off'
         response = await self.delegate.handle_async_request(request)
         return await self.response_guard(response) if self.response_guard else response
 
@@ -56,4 +60,3 @@ async def client(profile: Profile, environment: dict[str, str], *, transport=Non
         yield sdk
     finally:
         await sdk.close()
-

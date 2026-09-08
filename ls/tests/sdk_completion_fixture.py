@@ -54,6 +54,7 @@ async def main():
             def receive(wire):
                 calls.append(wire);body=json.loads(wire.content)
                 assert wire.headers['user-agent']==user_agent() and not body.get('tools') and not body.get('stream')
+                assert wire.headers['x-omniroute-compression']=='off'
                 if mode=='options':
                     assert body['temperature']==0.25 and wire.headers['OpenAI-Organization']=='org-fixture' and wire.headers['OpenAI-Project']=='proj-fixture'
                 else:assert 'temperature' not in body and 'OpenAI-Organization' not in wire.headers and 'OpenAI-Project' not in wire.headers

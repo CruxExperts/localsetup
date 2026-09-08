@@ -114,6 +114,10 @@ def test_runtime_installs_locked_backend_before_source_download(tmp_path, monkey
         return subprocess.CompletedProcess(command, 0, stderr="")
 
     monkeypatch.setattr(runtime.subprocess, "run", run)
+    from ls.core.release_docs import runtime_candidate
+    monkeypatch.setattr(runtime_candidate, "build_candidate", lambda *args: {
+        "wheel": assets / "candidate.whl", "wheel_sha256": "b" * 64,
+        "source_commit": "a" * 40})
     monkeypatch.setattr(runtime_install, "install", lambda *args, **kwargs: {"status": "installed"})
     assert runtime.provision(tmp_path, tmp_path.parent / "fixture-runtime", assets, "/runner/python")["ok"]
     backend = next(i for i, command in enumerate(commands) if "install" in command)

@@ -1,7 +1,7 @@
-"""Provision a protected completion runtime from a verified published wheel.
+"""Provision candidate completion code with verified published SDK dependencies.
 
-No version solving: dependencies are downloaded against the wheel's hashed
-exports, then installed through the existing offline runtime owner.
+No version solving: dependencies use the published wheel's hashed exports.
+A Git-bound candidate wheel supplies code through the existing runtime owner.
 """
 from __future__ import annotations
 
@@ -95,9 +95,14 @@ def provision(root: Path, runtime_root: Path, assets_dir: Path, python: str) -> 
                             "-r", str(assets_dir / name)], cwd=assets_dir, check=True,
                            timeout=120, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                            env=environment)
+    from .runtime_candidate import build_candidate
+    print(json.dumps({"stage": "build-verified-candidate-runtime"}), flush=True)
+    candidate = build_candidate(root, assets_dir, wheel, str(download_env / "bin/python"), environment)
     print(json.dumps({"stage": "install-protected-runtime"}), flush=True)
-    result = install(runtime_root, wheel, digest, wheelhouse, root, timeout=300)
+    result = install(runtime_root, candidate["wheel"], candidate["wheel_sha256"], wheelhouse, root, timeout=300)
     return {"ok": True, "baseline": baseline, "wheel_sha256": digest,
+            "candidate_commit": candidate["source_commit"],
+            "candidate_wheel_sha256": candidate["wheel_sha256"],
             "runtime_status": result.get("status", "installed")}
 
 

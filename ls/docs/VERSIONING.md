@@ -169,8 +169,11 @@ The `publish` workflow dispatch modes are `release` (normal preparation and draf
 mutation), and `qualify` (prepare and validate local integration on the ephemeral
 runner without pushing or creating a release).
 Model settings reuse the existing `QC_LLM_*` configuration. Hosted preparation
-installs a protected runtime from the verified published framework wheel and its
-hashed dependency exports before any model request. It does not select new
+uses the verified published framework wheel's hashed dependency exports and
+builds the completion runtime wheel offline from the clean candidate commit.
+It verifies packaged source and data bytes against that commit and rejects dependency
+lock changes before installing through the protected runtime owner. The runtime
+receipt records the candidate commit and wheel digest. It does not select new
 dependency versions. Runtime provisioning failure retains evidence and blocks the
 affected run; it is never treated as successful qualification.
 Preparation also enforces a total completion-call budget and a 30-minute model
