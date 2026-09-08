@@ -19,6 +19,24 @@ def test_claim_mapping_can_decline_an_unrelated_fact_batch() -> None:
     assert source["minItems"] == 0
 
 
+def test_source_fact_schema_fixes_supplied_provenance(tmp_path):
+    from ls.core.release_docs.agent import _source_facts
+    from ls.core.release_docs.schemas import FACT_SCHEMA
+
+    class Client:
+        def complete(self, prompt, response_schema, **kwargs):
+            properties = response_schema["properties"]["facts"]["items"]["properties"]
+            assert properties["path"]["enum"] == ["source.py"]
+            assert properties["chunk"]["enum"] == [2]
+            assert properties["evidence"]["items"]["enum"] == ["source.py", "a" * 40]
+            return json.dumps({"facts": [{"path": "source.py", "chunk": 2,
+                                         "text": "A source fact.", "evidence": ["source.py"]}]})
+
+    _source_facts(Client(), CompletionBudget(2, time.monotonic() + 30), {"source_commit": "a" * 40},
+                  [{"path": "source.py", "chunk": 2, "kind": "change", "text": "source"}], {"source.py"})
+    assert "enum" not in FACT_SCHEMA["properties"]["facts"]["items"]["properties"]["path"]
+
+
 def _write(root: Path, path: str, content: str) -> None:
     target = root / path
     target.parent.mkdir(parents=True, exist_ok=True)

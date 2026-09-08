@@ -199,9 +199,15 @@ def _source_facts(client: CompletionClient, budget: CompletionBudget, plan: Mapp
                   source_paths: set[str]) -> list[dict[str, Any]]:
     facts: list[dict[str, Any]] = []
     for chunk in source_chunks:
+        # Provenance identifiers are supplied facts, not model-authored fields.
+        schema = json.loads(json.dumps(FACT_SCHEMA))
+        properties = schema["properties"]["facts"]["items"]["properties"]
+        properties["path"]["enum"] = [chunk["path"]]
+        properties["chunk"]["enum"] = [chunk["chunk"]]
+        properties["evidence"]["items"]["enum"] = [chunk["path"], plan["source_commit"]]
         response = _call(
-            client, budget, "release source analyst", FACT_SCHEMA,
-            {"instruction": "Extract at least one concrete fact from this exact source chunk, stating no public impact when appropriate. Unchanged references supply existing operational guidance, not new features. JSON only; every evidence item must name this source path or the source commit.",
+            client, budget, "release source analyst", schema,
+            {"instruction": "Extract at least one concrete fact from this exact source chunk, stating no public impact when appropriate. Copy source_chunk.path and source_chunk.chunk exactly into every fact; do not use file paths mentioned inside its text. Unchanged references supply existing operational guidance, not new features. JSON only; every evidence item must name this source path or the source commit.",
              "release": {"source_commit": plan["source_commit"]}, "source_chunk": chunk},
             "release_docs_source_facts",
         )
