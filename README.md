@@ -21,14 +21,16 @@ LocalSetup provides capability skills, executable workflow packages, explicit ad
 Start with the [quickstart](ls/docs/QUICKSTART.md) or browse the [documentation](ls/docs/README.md). The [latest published release](https://github.com/CruxExperts/localsetup/releases/latest) provides release notes and downloads.
 
 <!-- release-summary:start -->
-## What's new in 4.22.9
+## What's new in 4.23.0
 
-This maintenance release fixes OpenCode inventory limits and makes unavailable workflow selections actionable during recorded updates.
+LocalSetup now prepares and checks release documentation before the publication workflow builds a release archive. A structured release record keeps homepage highlights, entry-page links, the release guide, and GitHub notes aligned with the planned version.
 
-- **Reliable OpenCode inventory:** Ordinary package references no longer consume the directory traversal budget. Resolved directories are scanned once, with separate directory and total-entry limits. Recursive scanning still detects nested skill-name conflicts; malformed metadata, cycles, and unresolved links still block unsafe updates.
-- **Actionable update reports:** Healthy recorded personal, combined, and retained-repository updates identify every missing selection. Reports name owning skills for eight consolidated workflows and distinguish unknown selections or absent replacements. Recorded selections and ownership state are preserved for review.
+- **Release-aware documentation:** Canonical version planning drives one checked content record and the managed current-release sections. Stale versions, rendered-content drift, broken guide links, and incorrect verification archive names block preparation.
+- **Source-backed authoring and review:** Active public documents receive static checks, with targeted editorial review against committed changes. The protected, tool-free QC runtime proposes edits and independently reviews them with bounded calls, deadlines, source receipts, and public-link preservation.
+- **Documentation-only repair:** The repair workflow can update published release prose without rebuilding packages or replacing tags and assets. It refuses to describe unreleased executable changes as part of an already published release.
+- **Preserved release history:** Version synchronization leaves historical release guides intact while refreshing the current version and generated documentation.
 
-See the [4.22.9 release guide](ls/docs/releases/4.22.9.md) for compatibility, updating, and verification.
+See the [4.23.0 release guide](ls/docs/releases/4.23.0.md) for compatibility, updating, and verification.
 <!-- release-summary:end -->
 
 The [4.4.0 guide](ls/docs/releases/4.4.0.md) remains available as release history.

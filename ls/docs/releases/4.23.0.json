@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "version": "4.23.0",
+  "source_commit": "407869fa1d795c04816ffccaae12048bbac8dfca",
+  "baseline_tag": "v4.22.9",
+  "summary": "LocalSetup now prepares and checks release documentation before the publication workflow builds a release archive. A structured release record keeps homepage highlights, entry-page links, the release guide, and GitHub notes aligned with the planned version.",
+  "highlights": [
+    {
+      "text": "**Release-aware documentation:** Canonical version planning drives one checked content record and the managed current-release sections. Stale versions, rendered-content drift, broken guide links, and incorrect verification archive names block preparation.",
+      "evidence": ["ls/core/release_docs/checks.py", "ls/core/release_docs/render.py", ".github/workflows/publish.yml"]
+    },
+    {
+      "text": "**Source-backed authoring and review:** Active public documents receive static checks, with targeted editorial review against committed changes. The protected, tool-free QC runtime proposes edits and independently reviews them with bounded calls, deadlines, source receipts, and public-link preservation.",
+      "evidence": ["ls/core/release_docs/agent.py", "ls/core/release_docs/proposals.py", "ls/core/release_docs/runtime.py"]
+    },
+    {
+      "text": "**Documentation-only repair:** The repair workflow can update published release prose without rebuilding packages or replacing tags and assets. It refuses to describe unreleased executable changes as part of an already published release.",
+      "evidence": ["ls/core/release_docs/github.py", ".github/workflows/publish.yml"]
+    },
+    {
+      "text": "**Preserved release history:** Version synchronization leaves historical release guides intact while refreshing the current version and generated documentation.",
+      "evidence": ["ls/core/versioning_constants.py", "ls/tests/test_release_docs_engine.py"]
+    }
+  ],
+  "compatibility": [
+    "The framework command and Python distribution remain `localsetup`. Existing adapter ownership, recorded selections, and ordinary installation/update behavior are unchanged.",
+    "Automated release preparation requires the existing QC endpoint, credential, model configuration, and a successfully provisioned protected runtime. Missing configuration, incomplete review, or failed validation stops the release path.",
+    "The workflow continues into the existing draft and artifact handoff. Complete native artifact assembly and final public release publication are not automated by this change. Dependency versions and native runtime code are unchanged."
+  ],
+  "update": [
+    "Follow the quickstart update instructions to refresh the registered source to the intended release. `localsetup update` reapplies that source; it does not download a newer framework release. Explicit source checkouts remain under the user's control.",
+    "Once the registered source is current, preview the target:\n\n```bash\nlocalsetup plan --target-directory .\n```\n\nReview selections and clear blockers before applying:\n\n```bash\nlocalsetup update --target-directory .\nlocalsetup verify --level filesystem\n```",
+    "Repository maintainers should run the publish workflow's `qualify` mode before enabling the release path. Qualification integrates and validates only on its ephemeral runner, without pushing or creating a release. The versioning guide documents `release` and `repair` modes."
+  ],
+  "verification": [
+    "When this release is published, download `localsetup-v4.23.0.tar.gz`, `localsetup-v4.23.0.tar.gz.sha256`, and `localsetup-v4.23.0.tar.gz.cdx.json` together and keep all three files in the same directory.",
+    "Use `verify-release` to check the archive and its checksum and SBOM sidecars. Before publishing a draft, maintainers must also verify the complete wheel, source-distribution, and required native artifact inventory, then run the release-documentation draft check against the exact release commit."
+  ]
+}
