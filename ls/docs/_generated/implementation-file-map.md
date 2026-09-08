@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: f5c0d984686ea7c5524dd1dbcd48a7c29ee7aeb99bfd331e65628c96a0fd9a6f
+  source_provenance_hash: 5759d5b86b9a5943352697a2b73ddd63c3b2ee5c5ddc9f6fe46a41d540ba0f5e
   emitter: generate-docs
 framework_version: 4.25.0
-source_commit: 466da3d714fecbb76cc2147138b4bb3d1a9b4d77
-artifact_sha256: 8767b9998b750d46a1b0a6ed3dad376b90f23e1a4370f59e7a23fb70d8332644
+source_commit: 785efd519873a2efa7329191a68aaa9240335da6
+artifact_sha256: a1905c4105ebf23864ee59311cbccc35d737523e90052b61e5a9be681bd941ec
 ---
 # Implementation File Map
 
@@ -363,6 +363,7 @@ artifact_sha256: 8767b9998b750d46a1b0a6ed3dad376b90f23e1a4370f59e7a23fb70d833264
 | `refactor` | `ls/core/release_docs/proposals.py` |
 | `refactor` | `ls/core/release_docs/render.py` |
 | `refactor` | `ls/core/release_docs/runtime.py` |
+| `refactor` | `ls/core/release_docs/runtime_candidate.py` |
 | `refactor` | `ls/core/release_docs/safety.py` |
 | `refactor` | `ls/core/release_docs/schemas.py` |
 | `refactor` | `ls/core/repair.py` |
@@ -1334,6 +1335,7 @@ artifact_sha256: 8767b9998b750d46a1b0a6ed3dad376b90f23e1a4370f59e7a23fb70d833264
 | `keep` | `ls/tests/test_release_docs_integration.py` |
 | `keep` | `ls/tests/test_release_docs_workflow.py` |
 | `keep` | `ls/tests/test_release_draft_workflow.py` |
+| `keep` | `ls/tests/test_release_runtime_candidate.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `ls/tests/test_repository_personal_overlap.py` |
