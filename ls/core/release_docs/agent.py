@@ -158,7 +158,7 @@ def _call(client: CompletionClient, budget: CompletionBudget, role: str, schema:
     call_client = client
     if isinstance(client, LLMClient):
         timeout = min(client.config.timeout_seconds, max(1, int(remaining)))
-        call_client = LLMClient(replace(client.config, timeout_seconds=timeout))
+        call_client = LLMClient(replace(client.config, timeout_seconds=timeout), session_id=client.session_id)
     response = call_client.complete(prompt, response_schema=schema, schema_name=name)
     response = _restore_urls(response, escrow)
     return _decode(response, role)

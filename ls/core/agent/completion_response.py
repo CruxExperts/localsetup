@@ -10,8 +10,9 @@ class Rejected(ValueError):
 
 
 class Capture:
-    def __init__(self,api,check):
+    def __init__(self,api,check,session_id=None):
         self.api=api;self.check=check;self.request_id=None;self.status=None;self.text=None
+        self.session_id=session_id
 
     async def __call__(self,response):
         try: return await self.read(response)

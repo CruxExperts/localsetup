@@ -13,6 +13,28 @@ from ls.core.release_docs.agent import CompletionBudget, _call, prepare_candidat
 from ls.core.release_docs.proposals import normalize_source_material, validate_proposal, validate_record
 
 
+def test_deadline_clients_preserve_one_run_session_without_sharing_prompts(monkeypatch):
+    from dataclasses import replace
+    from tools.qc_patrol.config import load_config
+    from tools.qc_patrol.llm_client import LLMClient
+    from ls.core.agent.completion_contract import envelope
+    config=replace(load_config(Path.cwd()).llm,base_url='https://example.test/v1',api_key='fixture')
+    observed=[]
+    def complete(root,payload,authority):
+        observed.append(json.loads(payload['request']))
+        return envelope('succeeded',model=config.model,data={},attempts=1)
+    monkeypatch.setattr('ls.core.agent.completion_run.run',complete)
+    client=LLMClient(config)
+    budget=CompletionBudget(3,time.monotonic()+30)
+    for body in ({'source':'first'},{'source':'second'}):
+        assert _call(client,budget,'analyst',{'type':'object'},body,'fixture')=={}
+    assert _call(LLMClient(config),budget,'analyst',{'type':'object'},{'source':'third'},'fixture')=={}
+    assert observed[0]['session_id']==observed[1]['session_id']==client.session_id
+    assert observed[2]['session_id']!=client.session_id
+    assert 'first' not in observed[1]['input']
+    assert 'second' not in observed[2]['input']
+
+
 def test_claim_mapping_can_decline_an_unrelated_fact_batch() -> None:
     from ls.core.release_docs.schemas import CLAIM_MAP_SCHEMA
     source = CLAIM_MAP_SCHEMA["properties"]["mappings"]["items"]["properties"]["source"]

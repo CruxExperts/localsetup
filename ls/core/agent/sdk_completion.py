@@ -25,7 +25,7 @@ async def complete(profile,environment,finder,raw,*,expires,check,transport=None
     def active():
         check()
         if time.monotonic()>=expires:raise TimeoutError('Completion deadline')
-    capture=Capture(profile.api,active)
+    capture=Capture(profile.api,active,request.session_id)
     try:
         active()
         try:profile.credential(environment)

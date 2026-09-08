@@ -38,7 +38,7 @@ async def main():
                 value=json.loads(request);value['schema_mode']='validate_only'
                 actual_request=json.dumps(value).encode();actual_profile=replace(profile,capabilities=frozenset())
             if mode=='options':
-                value=json.loads(request);value.update(temperature=0.25,schema_name='qc_fixture')
+                value=json.loads(request);value.update(temperature=0.25,schema_name='qc_fixture',session_id='a'*32)
                 actual_request=json.dumps(value).encode()
                 actual_profile=replace(profile,capabilities=profile.capabilities | {'temperature'},organization='org-fixture',project='proj-fixture')
             if mode in REASONING_EFFORTS:
@@ -55,6 +55,8 @@ async def main():
                 calls.append(wire);body=json.loads(wire.content)
                 assert wire.headers['user-agent']==user_agent() and not body.get('tools') and not body.get('stream')
                 assert wire.headers['x-omniroute-compression']=='off'
+                assert wire.headers.get('x-session-id')==('a'*32 if mode=='options' else None)
+                assert 'session_id' not in body
                 if mode=='options':
                     assert body['temperature']==0.25 and wire.headers['OpenAI-Organization']=='org-fixture' and wire.headers['OpenAI-Project']=='proj-fixture'
                 else:assert 'temperature' not in body and 'OpenAI-Organization' not in wire.headers and 'OpenAI-Project' not in wire.headers

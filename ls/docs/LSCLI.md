@@ -1096,6 +1096,13 @@ Requests may supply `schema_name` (1–64 ASCII letters, digits, `_` or `-`; def
 record endpoint/model qualification; they do not prove every provider supports
 every combination. Native fixtures verify the fields on both API formats.
 
+Optional `session_id` accepts exactly 32 lowercase hexadecimal characters and
+sets `X-Session-Id` at final send. Use one opaque random identity for requests
+belonging to the same run, and different identities for independent runs. It is
+transport metadata, not conversation history or authorization. Omission sends
+no session header. QC manages this identity for each client run, including its
+deadline-limited documentation calls, without changing gateway limits.
+
 QC's existing string-returning client delegates to the protected worker while
 retaining its default review schema, schema name and prompt redaction. It never
 installs a runtime or retries a possibly delivered request. See the

@@ -1010,6 +1010,14 @@ these workers cannot retrieve source text replaced by CCR content references.
 The header is scoped to each completion request and does not change shared
 gateway settings, the selected model, or the credential.
 
+An optional `session_id` contains exactly 32 lowercase hexadecimal characters.
+The protected request binds it to the caller's authority and sends it only as
+`X-Session-Id`, outside the model input. QC assigns a random identity to each
+client run and preserves it when shortening individual request deadlines.
+Successive source chunks therefore belong to one gateway session without
+accumulating conversation history. Independent runs receive different identities.
+This does not raise gateway session limits or expire other active sessions.
+
 The result envelope contains `interface_version`, `status`, `data`, `model`,
 `usage`, `request_id`, `attempts` and a stable `reason` code equal to its status.
 Failure data is always null. Exit codes are: succeeded 0, invalid_request 2,

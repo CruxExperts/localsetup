@@ -32,6 +32,8 @@ def test_completion_request_and_output_contract():
     {'output_schema':{'$ref':'#/$defs/missing'}},
     {'output_schema':{'$ref':'#missing-anchor'}},
     {'output_schema':{'type':'not-a-type'}},
+    {'session_id':'bad\nheader'}, {'session_id':'private-session-name'},
+    {'session_id':32}, {'session_id':'a'*33},
 ])
 def test_completion_preflight_refuses_invalid_requests(change):
     profile,value=fixture()
@@ -80,3 +82,9 @@ def test_completion_optional_metadata_and_temperature():
     assert wire(profile)==configured
     assert parse(json.dumps(value|{'temperature':0.5,'schema_name':'qc_review'}).encode(),profile).temperature==0.5
     with pytest.raises(ValueError):profile_parse(configured|{'organization':'org\nsecret'})
+
+
+def test_completion_session_identity_is_optional_and_opaque():
+    profile,value=fixture()
+    assert parse(json.dumps(value).encode(),profile).session_id is None
+    assert parse(json.dumps(value|{'session_id':'a'*32}).encode(),profile).session_id=='a'*32

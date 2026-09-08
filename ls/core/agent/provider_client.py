@@ -34,6 +34,9 @@ class BoundTransport(httpx.AsyncBaseTransport):
             # Tool-free completions cannot retrieve CCR markers substituted by
             # a gateway. Preserve their full input at the final send boundary.
             request.headers['X-OmniRoute-Compression'] = 'off'
+            session_id = getattr(self.response_guard, 'session_id', None)
+            if session_id is not None:
+                request.headers['X-Session-Id'] = session_id
         response = await self.delegate.handle_async_request(request)
         return await self.response_guard(response) if self.response_guard else response
 

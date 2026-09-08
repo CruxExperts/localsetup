@@ -107,3 +107,19 @@ def test_oversized_serialized_request_refused_before_send():
             await transport.handle_async_request(httpx.Request('POST',profile.endpoint,content=b'x'*(16*1024*1024+1)))
         await transport.aclose()
     asyncio.run(run())
+def test_plain_response_guard_keeps_dispatch_and_omits_session():
+    from ls.core.agent.provider_client import BoundTransport
+    profile=parse(config())
+    observed=[]
+    def receive(request):
+        observed.append(request.headers.get('X-Session-Id'))
+        return httpx.Response(200,json={})
+    async def guard(response):
+        return response
+    async def run():
+        transport=BoundTransport(profile,'fixture',httpx.MockTransport(receive),guard)
+        response=await transport.handle_async_request(httpx.Request('POST',profile.endpoint,content=b'{}'))
+        assert response.status_code==200
+        await transport.aclose()
+    asyncio.run(run())
+    assert observed==[None]

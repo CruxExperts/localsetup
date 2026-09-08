@@ -25,6 +25,7 @@ class Request:
     schema_mode: str
     temperature: float | None = None
     schema_name: str = "completion"
+    session_id: str | None = None
 
 
 def validator(schema):
@@ -68,7 +69,7 @@ def parse(raw: bytes, profile) -> Request:
     value = _decode(raw)
     required = {'interface_version', 'model', 'deadline_seconds', 'max_attempts',
                 'max_output_tokens', 'input', 'output_schema'}
-    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {'reasoning_effort', 'schema_mode', 'temperature', 'schema_name'}:
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {'reasoning_effort', 'schema_mode', 'temperature', 'schema_name', 'session_id'}:
         raise ValueError('Completion request fields differ from version one')
     if type(value['interface_version']) is not int or value['interface_version'] != 1:
         raise ValueError('Unsupported completion interface version')
@@ -97,8 +98,11 @@ def parse(raw: bytes, profile) -> Request:
     import re
     name=value.get('schema_name','completion')
     if not isinstance(name,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',name):raise ValueError('Invalid schema name')
+    session=value.get('session_id')
+    if session is not None and (not isinstance(session,str) or not re.fullmatch(r'[0-9a-f]{32}',session)):
+        raise ValueError('Invalid completion session identity')
     validator(value['output_schema'])
-    return Request(profile.model, effort, float(deadline), tokens, value['input'], value['output_schema'], mode,temperature,name)
+    return Request(profile.model, effort, float(deadline), tokens, value['input'], value['output_schema'], mode,temperature,name,session)
 
 
 def validate_output(text: str, request: Request):

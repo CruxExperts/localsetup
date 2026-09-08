@@ -17,8 +17,9 @@ class LLMDisabled(RuntimeError):
 
 class LLMClient:
     """Keep QC's string-returning interface over protected tool-free completion."""
-    def __init__(self, config: LLMConfig):
+    def __init__(self, config: LLMConfig, *, session_id: str | None = None):
         self.config = config
+        self.session_id = uuid.uuid4().hex if session_id is None else session_id
 
     def complete(self, prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc_pr_review") -> str:
         if not self.config.base_url or not self.config.api_key:
@@ -40,7 +41,8 @@ class LLMClient:
                 'organization':self.config.organization,'project':self.config.project})
             request={'interface_version':1,'model':profile.model,'deadline_seconds':self.config.timeout_seconds,
                 'max_attempts':1,'max_output_tokens':self.config.max_tokens,'input':redact_text(prompt),
-                'output_schema':response_schema if response_schema is not None else LLM_REVIEW_SCHEMA,'schema_name':schema_name}
+                'output_schema':response_schema if response_schema is not None else LLM_REVIEW_SCHEMA,'schema_name':schema_name,
+                'session_id':self.session_id}
             if self.config.reasoning_effort:request['reasoning_effort']=self.config.reasoning_effort
             if self.config.temperature_supported:request['temperature']=self.config.temperature
             payload={'profile':wire(profile),'credential':self.config.api_key,'request':json.dumps(request,allow_nan=False)}
