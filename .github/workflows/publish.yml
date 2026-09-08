@@ -91,6 +91,7 @@ jobs:
           QC_LLM_API_STYLE: ${{ vars.QC_LLM_API_STYLE }}
           QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
           QC_LLM_TIMEOUT_SECONDS: ${{ vars.QC_LLM_TIMEOUT_SECONDS }}
+          QC_LLM_MAX_CALLS: "800"
           QC_LLM_TOTAL_DEADLINE_SECONDS: "1800"
           QC_LLM_RUNTIME_ROOT: ${{ runner.temp }}/release-docs-runtime
           RELEASE_DOCS_MODE: ${{ inputs.mode || 'release' }}
