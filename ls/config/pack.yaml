@@ -131,6 +131,7 @@ packs:
   integrations:
   - ls-agent-email-inbox
   - ls-agentq-transport
+  - ls-backblaze
   - ls-cloudflare-dns
   - ls-composio
   - ls-email-best-practices
@@ -506,6 +507,14 @@ extensions:
       tags:
       - agentq
       - transport
+      owner_scope: skill
+    ls-backblaze:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - backblaze
+      - storage
+      - s3
       owner_scope: skill
     ls-cloudflare-dns:
       class: integrations

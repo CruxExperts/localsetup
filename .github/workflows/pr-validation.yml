@@ -154,7 +154,7 @@ jobs:
       - name: Run pytest
         run: |
           workers="$(uv run --frozen python ls/tools/localsetup.py --source-root . test-workers)"
-          uv run --frozen pytest -n "$workers" ls/tests -q
+          uv run --frozen --group s3-sdk pytest -n "$workers" ls/tests -q
 
   shell-smoke-and-audit:
     name: shell smoke and framework audit
