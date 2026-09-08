@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6aaebaac1106aeaa20ed5d3545402f75d80b1235ccd59bc234b0d3e4afdf0843
+  source_provenance_hash: 98d38c0e95c84b522ef9408ed2d3e7d6212a64576ec7104659440b15e5894168
   emitter: generate-docs
-framework_version: 4.22.9
-source_commit: ca8a6e2009aa13c8eaa75422f4a55039d892b6a5
-artifact_sha256: bdf5734f1e42c29b2e2b4f17806dd01373e02c0aa0db2757ed1e79e68c4c2f89
+framework_version: 4.23.0
+source_commit: 71a55c48d08f2de301557c8c21b89a778a6e785f
+artifact_sha256: b988636739856cdb8c6f67ad9f51a3c58f0850489e93c4f267aad2407b5abd8e
 ---
 # Implementation File Map
 
@@ -350,6 +350,21 @@ artifact_sha256: bdf5734f1e42c29b2e2b4f17806dd01373e02c0aa0db2757ed1e79e68c4c2f8
 | `refactor` | `ls/core/recorded_mode.py` |
 | `refactor` | `ls/core/reference_materializer.py` |
 | `refactor` | `ls/core/registry.py` |
+| `refactor` | `ls/core/release_docs/__init__.py` |
+| `refactor` | `ls/core/release_docs/agent.py` |
+| `refactor` | `ls/core/release_docs/application.py` |
+| `refactor` | `ls/core/release_docs/checks.py` |
+| `refactor` | `ls/core/release_docs/cli.py` |
+| `refactor` | `ls/core/release_docs/content.py` |
+| `refactor` | `ls/core/release_docs/github.py` |
+| `refactor` | `ls/core/release_docs/integration.py` |
+| `refactor` | `ls/core/release_docs/inventory.py` |
+| `refactor` | `ls/core/release_docs/planning.py` |
+| `refactor` | `ls/core/release_docs/proposals.py` |
+| `refactor` | `ls/core/release_docs/render.py` |
+| `refactor` | `ls/core/release_docs/runtime.py` |
+| `refactor` | `ls/core/release_docs/safety.py` |
+| `refactor` | `ls/core/release_docs/schemas.py` |
 | `refactor` | `ls/core/repair.py` |
 | `refactor` | `ls/core/repair_actions.py` |
 | `refactor` | `ls/core/repair_common.py` |
@@ -523,7 +538,10 @@ artifact_sha256: bdf5734f1e42c29b2e2b4f17806dd01373e02c0aa0db2757ed1e79e68c4c2f8
 | `keep` | `ls/docs/migration/skill-alias-map.md` |
 | `keep` | `ls/docs/ops/tmux-ops-managed.md` |
 | `keep` | `ls/docs/ops/tmux-ops-remote.md` |
+| `keep` | `ls/docs/releases/4.22.9.json` |
 | `keep` | `ls/docs/releases/4.22.9.md` |
+| `keep` | `ls/docs/releases/4.23.0.json` |
+| `keep` | `ls/docs/releases/4.23.0.md` |
 | `keep` | `ls/docs/releases/4.4.0.md` |
 | `keep` | `ls/docs/scrapling-cheat-sheet.md` |
 | `keep` | `ls/lib/data_paths.sh` |
@@ -1232,6 +1250,10 @@ artifact_sha256: bdf5734f1e42c29b2e2b4f17806dd01373e02c0aa0db2757ed1e79e68c4c2f8
 | `keep` | `ls/tests/test_registration_owner.py` |
 | `keep` | `ls/tests/test_registration_plan.py` |
 | `keep` | `ls/tests/test_registration_refresh.py` |
+| `keep` | `ls/tests/test_release_docs_agent.py` |
+| `keep` | `ls/tests/test_release_docs_engine.py` |
+| `keep` | `ls/tests/test_release_docs_integration.py` |
+| `keep` | `ls/tests/test_release_docs_workflow.py` |
 | `keep` | `ls/tests/test_release_draft_workflow.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
@@ -1333,6 +1355,7 @@ artifact_sha256: bdf5734f1e42c29b2e2b4f17806dd01373e02c0aa0db2757ed1e79e68c4c2f8
 | `keep` | `ls/tools/native_sbom.py` |
 | `keep` | `ls/tools/python_architecture_check.py` |
 | `keep` | `ls/tools/refresh_public_skill_index.py` |
+| `keep` | `ls/tools/release_docs.py` |
 | `keep` | `ls/tools/scrapling_helper/__init__.py` |
 | `keep` | `ls/tools/scrapling_helper/adapter_parser.py` |
 | `keep` | `ls/tools/scrapling_helper/adapter_state.py` |

@@ -1,14 +1,14 @@
 ---
 status: ACTIVE
-version: 4.22
+version: 4.23
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6aaebaac1106aeaa20ed5d3545402f75d80b1235ccd59bc234b0d3e4afdf0843
+  source_provenance_hash: 98d38c0e95c84b522ef9408ed2d3e7d6212a64576ec7104659440b15e5894168
   emitter: generate-docs
-framework_version: 4.22.9
-source_commit: ca8a6e2009aa13c8eaa75422f4a55039d892b6a5
-artifact_sha256: 343858aac153c84fd907f5337bc49a95017ef66f2344a1d902516733549cf7e6
+framework_version: 4.23.0
+source_commit: 71a55c48d08f2de301557c8c21b89a778a6e785f
+artifact_sha256: 683f7eff259cf08199bda19af4593ef13048e4b34b3962d4c1406b87380009a5
 ---
 # Shipped skills catalog
 
@@ -27,11 +27,11 @@ Total shipped skills: 103
 | `ls-test-runner` | `core` | 10 | `bootstrap`, `core` | `testing`, `validation` | `ls-test-runner` | `1.1` | Use when writing or running tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright), including TDD workflow, coverage, and test patterns. |
 | `ls-automatic-versioning` | `framework-governance` | 20 | `publishing` | `versioning`, `release` | `ls-automatic-versioning` | `1.1` | Use and maintain automatic versioning from conventional commits; VERSION as source of truth; sync to READMEs and docs. Use when working on version bumps, release workflow, or when the user asks about versioning or conventional commits. |
 | `ls-docs-organization` | `framework-governance` | 20 | `bootstrap`, `dev`, `publishing` | `docs`, `organization` | `ls-docs-organization` | `0.1.0` | Use when creating, moving, renaming, or significantly updating repo docs; classifies documentation requests, proposes paths, and keeps indexes in sync. |
-| `ls-documentation-alignment` | `framework-governance` | 20 | `dev`, `publishing` | `docs`, `alignment` | `ls-documentation-alignment` | `1.0` | Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass. |
+| `ls-documentation-alignment` | `framework-governance` | 20 | `dev`, `publishing` | `docs`, `alignment` | `ls-documentation-alignment` | `1.1` | Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass. |
 | `ls-framework-audit` | `framework-governance` | 20 | `bootstrap`, `dev` | `audit`, `release` | `ls-framework-audit` | `1.0` | Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release. |
 | `ls-framework-compliance` | `framework-governance` | 20 | `bootstrap`, `dev` | `compliance`, `framework` | `ls-framework-compliance` | `1.2` | Pre-task workflow, certainty assessment, context load, document status, testing, Git checkpoints, document maintenance. Use for framework modifications, PRDs, or any task that must follow checklist and checkpoints. |
 | `ls-git-workflows` | `framework-governance` | 20 | `bootstrap`, `dev` | `git`, `workflows` | `ls-git-workflows` | `1.3` | Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos. |
-| `ls-github-publishing-workflow` | `framework-governance` | 20 | `publishing` | `github`, `publishing` | `ls-github-publishing-workflow` | `1.1` | Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings. |
+| `ls-github-publishing-workflow` | `framework-governance` | 20 | `publishing` | `github`, `publishing` | `ls-github-publishing-workflow` | `1.2` | Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings. |
 | `ls-localsetup-doctor` | `framework-governance` | 20 | `core` | `doctor`, `repair` | `ls-localsetup-doctor` | `1.0` | Use for LocalSetup doctor repair workflows: dry-run review, decision handling, conservative apply, backup evidence, and post-repair verification. |
 | `ls-markdown-reference-validator` | `framework-governance` | 20 | `dev`, `publishing` | `markdown`, `references` | `ls-markdown-reference-validator` | `1.0` | Use when validating repository Markdown local references and anchors; scheduled-safe YAML-configured reports keep host-aware scans explicit and local-only. |
 | `ls-public-repo-identity` | `framework-governance` | 20 | `publishing` | `identity`, `publishing` | `ls-public-repo-identity` | `1.2` | Public repo identity - use in README and published repos. For real identity details, use a local-only identity file that is not committed. Use when editing README*, CONTRIBUTING*. |
