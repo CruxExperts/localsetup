@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "version": "4.22.9",
+  "source_commit": "6c2d34ec897ccfad1c5038457b02cdbb7f0f7701",
+  "baseline_tag": "v4.22.7",
+  "summary": "This maintenance release fixes OpenCode inventory limits and makes unavailable workflow selections actionable during recorded updates.",
+  "highlights": [
+    {
+      "text": "**Reliable OpenCode inventory:** Ordinary package references no longer consume the directory traversal budget. Resolved directories are scanned once, with separate directory and total-entry limits. Recursive scanning still detects nested skill-name conflicts; malformed metadata, cycles, and unresolved links still block unsafe updates.",
+      "evidence": ["ls/core/opencode_collisions.py", "ls/docs/CLIENT_INTEGRATION_METADATA.md"]
+    },
+    {
+      "text": "**Actionable update reports:** Healthy recorded personal, combined, and retained-repository updates identify every missing selection. Reports name owning skills for eight consolidated workflows and distinguish unknown selections or absent replacements. Recorded selections and ownership state are preserved for review.",
+      "evidence": ["ls/docs/ADAPTER_OWNERSHIP.md", "67aea1773a3673e7b8bd7c09c238f6567e5d2547"]
+    }
+  ],
+  "compatibility": [
+    "Existing repair blockers still take precedence. This release does not change dependency versions or native runtime behavior.",
+    "Custom skills, ordinary files, and project-owned symlinks in adapter directories remain project-owned. Unavailable selections are reported rather than automatically migrated.",
+    "The adapter ownership guide documents recorded-update reports and the workflow retirement mapping. The earlier 4.4.0 guide remains release history."
+  ],
+  "update": [
+    "Follow the quickstart update instructions to refresh the registered source to the intended release. `localsetup update` reapplies that source; it does not download a newer framework release. Explicit source checkouts remain under the user's control.",
+    "Once the registered source is current, preview the target:\n\n```bash\nlocalsetup plan --target-directory .\n```\n\nReview selections and clear blockers before applying:\n\n```bash\nlocalsetup update --target-directory .\nlocalsetup verify --level filesystem\n```"
+  ],
+  "verification": [
+    "Download `localsetup-v4.22.9.tar.gz`, `localsetup-v4.22.9.tar.gz.sha256`, and `localsetup-v4.22.9.tar.gz.cdx.json` from the published 4.22.9 release and keep all three files in the same directory.",
+    "The published release also includes a Python wheel and source distribution, and the unchanged native sandbox bundle with its provenance, SBOM, and corresponding sources from 4.22.7. Native artifacts are byte-identical to that release."
+  ]
+}

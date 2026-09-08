@@ -98,6 +98,14 @@ classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-a
 ## Docs
 ls/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md, DECISION_TREE_WORKFLOW.md, INPUT_HARDENING_STANDARD.md, TOOLING_POLICY.md, PYTHON_ARCHITECTURE_STANDARD.md
 
+Before publishing a release, audit active public documentation against the
+upcoming version and accepted changes. Check homepage highlights, current-release
+links, update examples, and release notes as well as numeric version displays.
+Use the repository's owning generators and release checks; preserve historical
+guides and compatibility examples. Passing generated-file checks alone is not
+evidence that authored prose is current. This guidance does not install a release
+workflow or authorize publication in a converted repository.
+
 ## Task-to-skill matching (default)
 - Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.
 - If user names a specific skill, load it directly. Do not run task-skill-matcher.

@@ -379,7 +379,7 @@
     },
     {
       "path": ".github/workflows/publish.yml",
-      "line_sha256": "90c2191b4717c031709186d9d3cb05ac7bbf32c499ec175f3d1d7dcfe7f8b5b1",
+      "line_sha256": "0c01f0379f68ce90a3460cd47df4233eebb73fdb0afeb858ea4d5e6a25926a48",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
@@ -387,7 +387,7 @@
     },
     {
       "path": ".github/workflows/publish.yml",
-      "line_sha256": "5aff3a5ce97cd5843d05168564f2b991bbeb9ca5da37ec8e113715a81f74185f",
+      "line_sha256": "5aee49af7560e4b9ab27316733716c603626bf40a6b453e4f5eae0fe031c63b6",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
@@ -448,6 +448,38 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Release artifact filename, glob, or workflow artifact identifier; kept stable for downloads and verification."
+    },
+    {
+      "path": "ls/core/release_docs/checks.py",
+      "line_sha256": "be3f57646cb6616a399b0a9980b352a83af4e4f32900c21488466296f4df81f3",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established framework archive filename pattern for target-version verification."
+    },
+    {
+      "path": "ls/core/release_docs/cli.py",
+      "line_sha256": "4d29aa58d3fbdd05cb8065e0b84e2666158dccc24219cd308781b8dea9eca636",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Existing framework executable name in argparse usage; not product display text."
+    },
+    {
+      "path": "ls/core/release_docs/github.py",
+      "line_sha256": "d581434950b491d096cbc94bf9d07f7e24fc4b89320a0b6d489191eaa0c1a7bd",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established release archive filename consumed by download verification."
+    },
+    {
+      "path": "ls/core/release_docs/runtime.py",
+      "line_sha256": "b9d410dcfda315825802b1b3962bda558f845a2500c7b2e29af2e0055855a0ce",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Python distribution wheel filename remains unchanged for package compatibility."
     },
     {
       "path": "README.md",

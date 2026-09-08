@@ -132,7 +132,7 @@ plan, install, verify, rollback, update, adapters, configure, doctor, state,
 migrate, context, convert, catalog, diff, skill, workflow, why, graph,
 candidate-skill, adopt, detach, sbom, scan-migration, audit-global-first,
 validate-catalog, generate-docs, provenance, harness, docs-align, context-index, hook-gate,
-version-plan, version-sync, release-push, self-refresh, install-hooks,
+version-plan, version-sync, release-docs, release-push, self-refresh, install-hooks,
 register-shell, wizard, package, verify-release, agent, llm
 ```
 
@@ -320,6 +320,27 @@ uv run --locked python ls/tools/localsetup.py --source-root . release-push
 ```
 
 For release preparation without pushing, run `publish-preflight --base origin/main --head HEAD` first from a clean worktree. It prepares the direct version-sync candidate unstaged and returns `prepared_not_ready` when the candidate needs review and a separate generated-document receipt. Add `--fix` only when the tool should prepare and commit the required version-sync/generated-document slices before the guarded push.
+
+Release documentation has its own source-aware gate:
+
+```bash
+localsetup release-docs plan --verify-baseline
+localsetup release-docs prepare --verify-baseline --candidate .agents/state/<task-slug>/candidate.json
+localsetup release-docs apply --candidate .agents/state/<task-slug>/candidate.json
+localsetup release-docs render
+localsetup release-docs check
+localsetup release-docs notes
+```
+
+`plan`, `check`, and `notes` read the candidate; `prepare` calls the configured
+protected QC model and writes private proposal evidence; `apply` writes an accepted
+hash-bound proposal; `render` regenerates managed sections and the current guide
+from an existing versioned record. Preparation and application require a clean
+checkout. Commit authored preparation before canonical version/generated sync.
+No command in this family publishes a release. For final draft validation use
+`release-docs check --draft-tag v<version> --expected-commit <sha>`; complete
+artifact verification is still required. See [versioning](VERSIONING.md#github-release-workflow)
+for automatic release, repair, and qualification modes.
 
 Release commands select a valid `.localsetup-release.json` from the planned
 committed HEAD. Its verified published anchor owns sequential arithmetic;

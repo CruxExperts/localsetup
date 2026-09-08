@@ -18,14 +18,20 @@ Keep reusable agent skills in one managed library, expose the packages each proj
 
 LocalSetup provides capability skills, executable workflow packages, explicit adapter selection, install planning, verification, and rollback records. It supports Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Custom project skills can live beside managed packages.
 
-Start with the [quickstart](ls/docs/QUICKSTART.md), browse the [documentation](ls/docs/README.md), or read the [current release guide](ls/docs/releases/4.22.9.md). The [latest published release](https://github.com/CruxExperts/localsetup/releases/latest) provides release notes and downloads.
+Start with the [quickstart](ls/docs/QUICKSTART.md) or browse the [documentation](ls/docs/README.md). The [latest published release](https://github.com/CruxExperts/localsetup/releases/latest) provides release notes and downloads.
 
+<!-- release-summary:start -->
 ## What's new in 4.22.9
 
-- **Reliable OpenCode inventory:** Ordinary package references no longer consume the directory traversal budget. Scans visit resolved directories once while retaining nested skill-conflict checks and bounded traversal.
-- **Actionable update reports:** Recorded updates identify unavailable workflow selections, name replacement owning skills where known, and distinguish unknown selections or missing replacements. Recorded selections stay intact for review.
+This maintenance release fixes OpenCode inventory limits and makes unavailable workflow selections actionable during recorded updates.
 
-See the [4.22.9 release guide](ls/docs/releases/4.22.9.md) for compatibility, updating, and verification. The [4.4.0 guide](ls/docs/releases/4.4.0.md) remains available as release history.
+- **Reliable OpenCode inventory:** Ordinary package references no longer consume the directory traversal budget. Resolved directories are scanned once, with separate directory and total-entry limits. Recursive scanning still detects nested skill-name conflicts; malformed metadata, cycles, and unresolved links still block unsafe updates.
+- **Actionable update reports:** Healthy recorded personal, combined, and retained-repository updates identify every missing selection. Reports name owning skills for eight consolidated workflows and distinguish unknown selections or absent replacements. Recorded selections and ownership state are preserved for review.
+
+See the [4.22.9 release guide](ls/docs/releases/4.22.9.md) for compatibility, updating, and verification.
+<!-- release-summary:end -->
+
+The [4.4.0 guide](ls/docs/releases/4.4.0.md) remains available as release history.
 
 ## The short version
 

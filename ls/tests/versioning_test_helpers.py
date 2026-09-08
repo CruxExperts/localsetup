@@ -11,6 +11,7 @@ def copy_full_repo(tmp_path: Path) -> Path:
     patterns = shutil.ignore_patterns(
         ".git",
         ".codex",
+        ".omp",
         ".venv",
         ".venv-*",
         "__pycache__",

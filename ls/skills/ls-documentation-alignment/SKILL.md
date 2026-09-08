@@ -2,7 +2,7 @@
 name: ls-documentation-alignment
 description: "Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass."
 metadata:
-  version: "1.0"
+  version: "1.1"
 compatibility: "Python 3.12+, PyYAML, LocalSetup docs_alignment.py adapter. Generic workflow with LocalSetup source-truth defaults."
 ---
 
@@ -88,6 +88,24 @@ uv run --locked python ls/tools/localsetup.py --source-root . docs-align check -
 ```
 
 ## Outputs
+
+### Release preparation
+
+In the LocalSetup source repository, `localsetup release-docs plan` resolves the
+upcoming version and inventories tracked active public documents. `prepare
+--verify-baseline --candidate .agents/state/<task-slug>/candidate.json` produces
+a scoped model proposal and independent review without applying it. The protected
+QC runtime must be available; failed or incomplete model execution is a blocker.
+`apply --candidate ...` is the explicit local write step; `render` updates managed
+sections from an existing record. Use `check` after
+canonical version/document synchronization and `notes` to render release prose.
+
+Versioned records under `ls/docs/releases/` own the managed `release-summary` and
+`release-link` blocks and their matching guides. Edit the record or its owning
+generator, not rendered blocks. Preserve historical guides. Semantic review must
+cover release claims and complete commands, including required checksum and SBOM
+sidecars; a zero-finding static audit alone does not establish semantic accuracy.
+Git-backed public inventories exclude untracked files and private state.
 
 Generated artifacts live under `ls/docs/_generated/`:
 

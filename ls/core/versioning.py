@@ -559,6 +559,7 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
         check = check_version_files(repo_root, target)
         result["version_check"] = check
         result["ok"] = bool(plan["ok"] and check["ok"])
+        _check_release_documentation(repo_root, target, result)
         return result
 
     if fix:
@@ -585,7 +586,23 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
     check = check_version_files(repo_root, target)
     result["version_check"] = check
     result["ok"] = bool(plan["ok"] and check["ok"])
+    _check_release_documentation(repo_root, target, result)
     return result
+
+
+def _check_release_documentation(repo_root: Path, target: str, result: dict) -> None:
+    """Opted-in source repositories must validate prose as well as versions."""
+    readme = repo_root / "README.md"
+    if not (repo_root / ".localsetup-release.json").is_file() or not readme.is_file() or "<!-- release-summary:start -->" not in readme.read_text(encoding="utf-8"):
+        return
+    from .release_docs.content import load_record
+    from .release_docs.checks import check
+    try:
+        report = check(repo_root, load_record(repo_root, target))
+    except (ValueError, OSError) as exc:
+        report = {"ok": False, "findings": [{"code": "release_documentation", "message": str(exc)}]}
+    result["release_documentation"] = report
+    result["ok"] = bool(result["ok"] and report["ok"])
 
 
 def push_lines_to_plans(repo_root: Path, lines: str) -> list[dict]:

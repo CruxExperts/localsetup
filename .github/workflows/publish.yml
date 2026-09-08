@@ -5,6 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Release preparation, published documentation repair, or runtime qualification"
+        type: choice
+        options: [release, repair, qualify]
+        default: release
 
 permissions:
   contents: write
@@ -16,15 +22,112 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare-documentation:
+    name: prepare and verify release documentation
+    if: github.ref == 'refs/heads/main' || inputs.mode == 'qualify'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    outputs:
+      head: ${{ steps.integrate.outputs.head }}
+      state: ${{ steps.evidence.outputs.state }}
+    steps:
+      - name: Checkout source candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Setup uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.11.21"
+          prune-cache: true
+      - name: Sync locked tooling
+        run: uv sync --frozen --all-groups --python python3
+      - name: Allocate task evidence
+        id: evidence
+        run: |
+          state=".agents/state/$(date -u +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)-release-docs"
+          mkdir -p "$state"
+          echo "RELEASE_DOCS_STATE=$state" >> "$GITHUB_ENV"
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+      - name: Provision protected completion runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          uv run --frozen python -m ls.core.release_docs.runtime \
+            --runtime-root "$RUNNER_TEMP/release-docs-runtime" \
+            --assets-dir "$RUNNER_TEMP/release-docs-inputs" \
+            --python "$(command -v python)"
+      - name: Audit, propose, and independently review documentation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QC_LLM_API_KEY: ${{ secrets.QC_LLM_API_KEY }}
+          QC_LLM_BASE_URL: ${{ secrets.QC_LLM_BASE_URL }}
+          QC_LLM_MODEL: ${{ vars.QC_LLM_MODEL }}
+          QC_LLM_API_STYLE: ${{ vars.QC_LLM_API_STYLE }}
+          QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
+          QC_LLM_TIMEOUT_SECONDS: ${{ vars.QC_LLM_TIMEOUT_SECONDS }}
+          QC_LLM_TOTAL_DEADLINE_SECONDS: "1800"
+          QC_LLM_RUNTIME_ROOT: ${{ runner.temp }}/release-docs-runtime
+          RELEASE_DOCS_MODE: ${{ inputs.mode || 'release' }}
+        run: |
+          flags=()
+          if [[ "$RELEASE_DOCS_MODE" == repair ]]; then flags+=(--repair); fi
+          uv run --frozen python ls/tools/localsetup.py --source-root . release-docs prepare \
+            --verify-baseline "${flags[@]}" --candidate "$RELEASE_DOCS_STATE/candidate.json"
+      - name: Integrate verified documentation
+        id: integrate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_DOCS_MODE: ${{ inputs.mode || 'release' }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          gh auth setup-git
+          flags=()
+          if [[ "$RELEASE_DOCS_MODE" != qualify ]]; then flags+=(--push); fi
+          uv run --frozen python -m ls.core.release_docs.integration \
+            --candidate "$RELEASE_DOCS_STATE/candidate.json" "${flags[@]}"
+      - name: Check integrated documentation
+        run: |
+          uv run --frozen python ls/tools/localsetup.py --source-root . release-docs check
+          uv run --frozen python ls/tools/docs_alignment.py --repo-root . check --ci
+          uv run --frozen python ls/tools/validate_branding.py --repo-root . --strict > "$RELEASE_DOCS_STATE/branding.json"
+          git diff --exit-code
+      - name: Repair published release prose without rebuilding
+        if: inputs.mode == 'repair'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(jq -er '.plan.published_baseline.tag' "$RELEASE_DOCS_STATE/candidate.json")"
+          uv run --frozen python ls/tools/localsetup.py --source-root . release-docs notes > "$RELEASE_DOCS_STATE/notes.md"
+          gh release edit "$tag" --notes-file "$RELEASE_DOCS_STATE/notes.md"
+      - name: Upload preparation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-docs-${{ github.run_id }}
+          path: ${{ env.RELEASE_DOCS_STATE }}/
+
   publish:
-    if: github.ref == 'refs/heads/main'
+    needs: prepare-documentation
+    if: github.ref == 'refs/heads/main' && inputs.mode != 'repair' && inputs.mode != 'qualify'
     name: publish release
+    env:
+      RELEASE_DOCS_STATE: ${{ needs.prepare-documentation.outputs.state }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          ref: ${{ needs.prepare-documentation.outputs.head }}
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -44,7 +147,7 @@ jobs:
         id: release-base
         env:
           BEFORE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ needs.prepare-documentation.outputs.head }}
         run: |
           set -euo pipefail
           base_sha="$BEFORE_SHA"
@@ -67,6 +170,9 @@ jobs:
       - name: Validate product branding
         run: uv run --frozen python ls/tools/validate_branding.py --repo-root . --strict
 
+      - name: Check release documentation before building
+        run: uv run --frozen python ls/tools/localsetup.py --source-root . release-docs check
+
       - name: Run publish validation
         run: |
           set -euo pipefail
@@ -88,12 +194,12 @@ jobs:
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
-          uv run --frozen python ls/tools/localsetup.py --source-root . verify-release "dist/localsetup-v${version}.tar.gz" --expected-commit "$GITHUB_SHA"
+          uv run --frozen python ls/tools/localsetup.py --source-root . verify-release "dist/localsetup-v${version}.tar.gz" --expected-commit "$(git rev-parse HEAD)"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: localsetup-release-${{ github.sha }}
+          name: localsetup-release-${{ needs.prepare-documentation.outputs.head }}
           path: |
             dist/localsetup-v*.tar.gz
             dist/localsetup-v*.tar.gz.sha256
@@ -107,10 +213,13 @@ jobs:
       - name: Prepare GitHub release draft
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_COMMIT: ${{ needs.prepare-documentation.outputs.head }}
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
           tag="v${version}"
+          mkdir -p "$RELEASE_DOCS_STATE"
+          uv run --frozen python ls/tools/localsetup.py --source-root . release-docs notes > "$RELEASE_DOCS_STATE/notes.md"
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
             existing="$(git rev-list -n 1 "${tag}")"
             current="$(git rev-parse HEAD)"
@@ -135,6 +244,6 @@ jobs:
             "dist/localsetup-v${version}.tar.gz.sha256" \
             "dist/localsetup-v${version}.tar.gz.cdx.json" \
             --draft \
-            --target "$GITHUB_SHA" \
+            --target "$RELEASE_COMMIT" \
             --title "LocalSetup ${version}" \
-            --notes "Draft awaiting the complete verified artifact set and release notes."
+            --notes-file "$RELEASE_DOCS_STATE/notes.md"

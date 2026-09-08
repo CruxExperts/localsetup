@@ -1,0 +1,107 @@
+"""Failed validation and uncertain source state cannot publish a candidate."""
+import json
+import subprocess
+import sys
+
+import pytest
+
+from ls.core.release_docs import application, integration, runtime
+from ls.core import versioning
+from ls.core.release_docs import planning, render
+from ls.tests.versioning_test_helpers import copy_full_repo, init_git_repo, run
+
+
+def test_validation_failure_stops_before_push(tmp_path, monkeypatch):
+    evidence = tmp_path / "candidate.json"
+    evidence.write_text(json.dumps({"plan": {"source_commit": "a" * 40}, "candidate": {}}))
+    monkeypatch.setattr(integration, "git", lambda root, *args:
+                        "a" * 40 + "\trefs/heads/main" if args[0] == "ls-remote" else "a" * 40)
+    monkeypatch.setattr(application, "apply_candidate", lambda *args: {"changed_paths": ["README.md"]})
+    monkeypatch.setattr(versioning, "publish_preflight", lambda *args, **kwargs: {"ok": True})
+    commands = []
+
+    def run(args, **kwargs):
+        commands.append(args)
+        if "check" in args:
+            raise subprocess.CalledProcessError(1, args)
+        return subprocess.CompletedProcess(args, 0)
+
+    monkeypatch.setattr(integration.subprocess, "run", run)
+    with pytest.raises(subprocess.CalledProcessError):
+        integration.integrate(tmp_path, evidence, push=True)
+    assert not any("push" in args for args in commands)
+
+
+def test_remote_advance_stops_before_applying(tmp_path, monkeypatch):
+    evidence = tmp_path / "candidate.json"
+    evidence.write_text(json.dumps({"plan": {"source_commit": "a" * 40}, "candidate": {}}))
+    monkeypatch.setattr(integration, "git", lambda root, *args:
+                        "b" * 40 + "\trefs/heads/main" if args[0] == "ls-remote" else "a" * 40)
+    monkeypatch.setattr(application, "apply_candidate", lambda *args: pytest.fail("stale candidate applied"))
+    with pytest.raises(ValueError, match="advanced"):
+        integration.integrate(tmp_path, evidence, push=True)
+
+
+def test_runtime_requires_published_wheel_digest(tmp_path, monkeypatch):
+    monkeypatch.setattr(runtime, "git", lambda *args: "a" * 40)
+    monkeypatch.setattr(runtime, "published_baseline", lambda *args: {"version": "1.2.3", "tag": "v1.2.3"})
+    monkeypatch.setattr(runtime, "gh_json", lambda *args: {"assets": [{"name": "localsetup-1.2.3-py3-none-any.whl"}]})
+    with pytest.raises(ValueError, match="trusted GitHub asset digest"):
+        runtime.provision(tmp_path, tmp_path.parent / "unused-runtime", tmp_path / "inputs", "/unused/python")
+    assert not (tmp_path / "inputs").exists()
+
+
+def test_real_preflight_preserves_planned_next_version(tmp_path, monkeypatch):
+    """A docs preparation commit cannot shift the canonical release arithmetic."""
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    current = (repo / "VERSION").read_text().strip()
+    anchor = run(repo, "git", "rev-parse", "HEAD").stdout.strip()
+    baseline = f"v{current}"
+    run(repo, "git", "tag", baseline)
+    (repo / ".localsetup-release.json").write_text(json.dumps({
+        "schema_version": 1, "policy": "sequential-logical-slices",
+        "anchor": {"commit": anchor, "version": current, "tag": baseline}, "overrides": [],
+    }))
+    run(repo, "git", "add", ".localsetup-release.json")
+    run(repo, "git", "commit", "-qm", "fix: exercise release documentation integration", "--no-verify")
+    plan = planning.plan(repo, base=baseline)
+    plan["published_baseline"] = {"commit": anchor, "tag": baseline}
+    target = plan["target_version"]
+    assert target != current
+    record = {
+        "schema_version": 1, "version": target, "source_commit": plan["source_commit"],
+        "baseline_tag": baseline, "summary": "Release documentation integration is checked.",
+        "highlights": [{"text": "Checks release preparation.", "evidence": [plan["source_commit"]]}],
+        "compatibility": ["No compatibility changes."], "update": ["Use the documented update procedure."],
+        "verification": ["Verify the archive with its `.sha256` checksum and `.cdx.json` SBOM sidecars."],
+    }
+    evidence = repo / ".agents/state/integration-test/candidate.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text(json.dumps({"plan": plan, "candidate": {}}))
+
+    def accepted_candidate(root, *_args):
+        outputs = render.render_outputs(root, record)
+        outputs[f"ls/docs/releases/{target}.json"] = json.dumps(record) + "\n"
+        for path, content in outputs.items():
+            (root / path).write_text(content)
+        return {"changed_paths": list(outputs)}
+
+    # The model boundary is separately tested; this test executes the real
+    # version/docs preparation and all final validators with the test runtime.
+    monkeypatch.setattr(application, "apply_candidate", accepted_candidate)
+    original_run = subprocess.run
+
+    def use_test_runtime(args, **kwargs):
+        if args[:4] == ["uv", "run", "--frozen", "python"]:
+            args = [sys.executable, *args[4:]]
+        return original_run(args, **kwargs)
+
+    monkeypatch.setattr(integration.subprocess, "run", use_test_runtime)
+    result = integration.integrate(repo, evidence)
+    assert result["ok"] and result["changed"]
+    assert (repo / "VERSION").read_text().strip() == target
+    assert planning.plan(repo, base=baseline)["target_version"] == target
+    assert not run(repo, "git", "status", "--porcelain").stdout

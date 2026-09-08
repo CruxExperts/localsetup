@@ -120,6 +120,10 @@ def handle(cli, args, root, home) -> int | None:
         print(f"localsetup: unsupported candidate-skill action: {args.candidate_skill_action}", file=sys.stderr)
         return 2
 
+    if args.cmd == "release-docs":
+        from .release_docs.cli import main as release_docs_main
+        return release_docs_main(["--repo-root", str(root), *args.release_docs_args])
+
     if args.cmd == "docs-align":
         tool = root / "ls" / "tools" / "docs_alignment.py"
         command = [sys.executable, str(tool), "--repo-root", str(root), *args.docs_align_args]

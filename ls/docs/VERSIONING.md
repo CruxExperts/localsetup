@@ -155,6 +155,29 @@ The `version-plan` output includes the selected `policy`, diagnostic `raw_bump` 
 
 ## GitHub release workflow
 
+Release preparation first audits active public documentation against the canonical
+upcoming version. A protected QC model proposes scoped prose changes; a separate
+review checks the candidate and its evidence. Versioned release content records
+generate homepage highlights, current guide links, the guide, and GitHub release
+notes. The workflow integrates accepted documentation only while the captured
+source SHA still matches `main`, then validates and builds that exact resulting
+commit. Missing runtime credentials, incomplete review, or documentation drift
+stops this path before package creation.
+
+The `publish` workflow dispatch modes are `release` (normal preparation and draft),
+`repair` (current published documentation and notes, no package build or tag/asset
+mutation), and `qualify` (prepare and validate local integration on the ephemeral
+runner without pushing or creating a release).
+Model settings reuse the existing `QC_LLM_*` configuration. Hosted preparation
+installs a protected runtime from the verified published framework wheel and its
+hashed dependency exports before any model request. It does not select new
+dependency versions. Runtime provisioning failure retains evidence and blocks the
+affected run; it is never treated as successful qualification.
+Preparation also enforces a total completion-call budget and a 30-minute model
+deadline, leaving runner time for validation and evidence upload. An oversized
+release stops before publication with an actionable scope/slice error; incomplete
+audits are never recorded as successful coverage.
+
 On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, verifies the tarball checksum and embedded artifact metadata, uploads the tarball plus `.sha256` and CycloneDX SBOM sidecars, attests the tarball when GitHub artifact attestation is available, and prepares draft release `vX.Y.Z` at the validated commit. Existing tags must already point at that commit. Existing releases and uncertain API lookups stop preparation for explicit reconciliation; reruns never overwrite assets.
 
 Complete the draft before publication. Attach the verified wheel/sdist and any
@@ -163,7 +186,10 @@ by the release. Verify the complete asset inventory, checksums, licenses, commit
 identity and accurate release notes, then publish the existing draft:
 
 ```bash
+uv run --locked python ls/tools/localsetup.py --source-root . release-docs notes > release-notes.md
 gh release edit "v$(cat VERSION)" --notes-file release-notes.md
+git fetch origin "refs/tags/v$(cat VERSION):refs/tags/v$(cat VERSION)"
+uv run --locked python ls/tools/localsetup.py --source-root . release-docs check --draft-tag "v$(cat VERSION)" --expected-commit "$(git rev-parse HEAD)"
 gh release edit "v$(cat VERSION)" --draft=false
 ```
 

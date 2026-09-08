@@ -62,6 +62,14 @@ def init_clean_git_repo(repo: Path) -> None:
     subprocess.run(["git", "commit", "-q", "-m", "chore: initial"], cwd=repo, check=True)
 
 
+def test_public_inventory_excludes_untracked_local_notes(tmp_path: Path):
+    from ls.core.docs_alignment.io import _markdown_files
+    (tmp_path / "README.md").write_text("# Public\n")
+    init_clean_git_repo(tmp_path)
+    (tmp_path / "PRIVATE_NOTES.md").write_text("Do not publish\n")
+    assert [path.name for path in _markdown_files(tmp_path)] == ["README.md"]
+
+
 def test_inventory_discovers_docs_assets_skills_workflows_and_ci(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
     payload = json.loads(run_tool(repo, "inventory").stdout)

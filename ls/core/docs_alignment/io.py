@@ -59,7 +59,7 @@ def _markdown_files(repo_root: Path) -> list[Path]:
     if (repo_root / ".git").exists():
         completed = run_git(
             repo_root,
-            ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.md"],
+            ["ls-files", "--cached", "-z", "--", "*.md"],
             text=False,
             capture_output=True,
             check=False,

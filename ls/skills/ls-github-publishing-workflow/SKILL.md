@@ -2,7 +2,7 @@
 name: ls-github-publishing-workflow
 description: "Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings."
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # GitHub publishing workflow (framework baseline)
@@ -47,6 +47,28 @@ Run a quick scrub command (e.g. grep for password, secret, api_key, token, /home
 - **Versioning docs:** If the project uses automatic versioning, document it (e.g. docs/VERSIONING.md) and link from README.
 
 ## Repository settings (on GitHub)
+
+### LocalSetup release-documentation gate
+
+The LocalSetup source workflow prepares and independently reviews release
+documentation before integration and build. The agent may propose affected
+authored documentation and a structured release record; it may not change code,
+workflow permissions, dependencies, generated catalogs, or policy. Trusted tooling
+validates and applies the exact candidate, then runs canonical version sync and
+documentation checks before an ordinary fast-forward push. A moved source ref,
+missing runtime, incomplete coverage, or unresolved claim stops publication.
+
+`publish.yml` supports `release`, `repair`, and `qualify` dispatch modes. `repair`
+updates documentation and published prose while preserving tags/assets and
+skipping package builds. `qualify` prepares evidence without integration or release
+mutation. These modes do not grant publishing authority to scheduled QC patrols.
+
+Before publishing a completed draft, fetch its tag and run
+`localsetup release-docs check --draft-tag v<version> --expected-commit <sha>`
+from that exact candidate. This compares rendered notes, tag identity, and the
+documented archive/checksum/SBOM asset names. It does not replace complete artifact,
+checksum, provenance, and license verification. Re-run if notes, source, or assets
+change. Direct administrative GitHub UI actions are outside workflow enforcement.
 
 - **Visibility:** Set to Public when the checklist is done.
 - **Description and topics:** Short description and topics for discoverability.

@@ -28,8 +28,6 @@ This is the public documentation map for LocalSetup. Start here when you want th
 |---|---|
 | [Project README](../../README.md) | Why LocalSetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
-| [Current release guide](releases/4.22.9.md) | OpenCode inventory and recorded-update fixes in 4.22.9, compatibility, updating, and verification. |
-| [Published releases and downloads](https://github.com/CruxExperts/localsetup/releases) | Release notes and assets; the [4.4.0 guide](releases/4.4.0.md) covers the earlier context and package consolidation. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
 | [LSCli operations](LSCLI.md) | Explicit profiles, offline runtime/command setup, protected coding, sessions, recovery, branches, compaction and tool-free completion. |
 | [LSCli runtime contracts](LSCLI_RUNTIME.md) | Grants, disclosure, sandbox resources, broker protocols, durable evidence and completion schemas. |
@@ -47,6 +45,12 @@ This is the public documentation map for LocalSetup. Start here when you want th
 | [Product naming and branding](BRANDING.md) | Display names, preserved technical identifiers, exact exceptions, and visual review evidence. |
 | [Multi-platform install](MULTI_PLATFORM_INSTALL.md) | Detailed install behavior and options. |
 | [Harness automation](HARNESS_AUTOMATION.md) | Opt-in heartbeat activation, typed LSCli profiles, reserved actions/controller accounting, runtime artifacts, cron gating and command-policy boundaries. |
+
+<!-- release-link:start -->
+Read the [current release guide](releases/4.22.9.md) for LocalSetup 4.22.9, including compatibility, updating, and verification. Find downloads in the [latest published release](https://github.com/CruxExperts/localsetup/releases/latest).
+<!-- release-link:end -->
+
+The [4.4.0 guide](releases/4.4.0.md) covers the earlier context and package consolidation.
 
 ## Skills And Workflow Packages At A Glance
 

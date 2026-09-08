@@ -64,6 +64,8 @@ include = ["ls*"]
   "docs/_generated/*.json",
   "docs/migration/*.md",
   "docs/ops/*.md",
+  "docs/releases/*.md",
+  "docs/releases/*.json",
   "discovery/**/*",
   "lib/*",
   "tools/*",

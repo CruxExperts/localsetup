@@ -60,6 +60,21 @@ def make_git_repo(tmp_path: Path) -> Path:
     return repo
 
 
+def test_receipt_stops_at_authored_refresh_subject(tmp_path: Path):
+    repo = make_git_repo(tmp_path)
+    (repo / "README.md").write_text("# Authored release guide\n")
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-qm", "docs: refresh homepage")
+    source = run(repo, "rev-parse", "HEAD")
+    generated = repo / "ls/docs/_generated/facts.json"
+    generated.parent.mkdir(parents=True)
+    generated.write_text("{}\n")
+    run(repo, "add", "ls/docs/_generated/facts.json")
+    run(repo, "commit", "-qm", "docs: refresh generated receipt")
+    assert generated_artifact_parent_source_commit(repo) == source
+    assert generated_docs_source_ref(repo, "HEAD^") is None
+
+
 def make_poison_index(tmp_path: Path) -> tuple[Path, Path]:
     alien = tmp_path / "alien"
     alien.mkdir()

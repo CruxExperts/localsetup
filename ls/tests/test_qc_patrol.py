@@ -335,7 +335,7 @@ def test_workflow_dependency_actions_are_pinned_and_cache_bounded() -> None:
                     setup_uv_steps += 1
                     assert uses == "astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d"
                     assert step["with"]["prune-cache"] is True
-    assert setup_uv_steps == 12
+    assert setup_uv_steps == 13
 
 
 def test_llm_client_disabled_without_secret() -> None:

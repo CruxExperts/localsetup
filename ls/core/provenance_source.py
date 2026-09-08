@@ -457,7 +457,7 @@ def generated_docs_terminal_ref(repo_root: Path, ref: str) -> str | None:
             )
             for path in changed_paths
         ):
-            return None
+            return current if current != ref else None
         parent = git_text(repo_root, ["rev-parse", f"{current}^"])
         if not parent:
             return None

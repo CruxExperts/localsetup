@@ -125,6 +125,16 @@ redesigns.
 
 ## Release Authority And Blockers
 
+Release documentation is a publication gate. Use `localsetup release-docs` to
+audit the upcoming canonical version, prepare and review affected prose, and
+check managed highlights, release-guide links, and release notes before building.
+Generate those surfaces from the versioned release content record; numeric
+version synchronization alone does not establish documentation readiness. Keep
+historical guides and compatibility examples intact. Before publishing a completed
+draft, run `release-docs check --draft-tag v<version> --expected-commit <sha>` in
+addition to complete artifact verification. Documentation-only repairs preserve
+the published tag/assets and use the repair workflow without rebuilding packages.
+
 Do not invent a maintainer-approval requirement. Require GitHub approval only when a live ruleset, branch-protection rule, repository policy, or the user's current instruction requires it. A user request to publish authorizes the ordinary in-scope release actions named in the accepted plan; do not re-ask for each step.
 
 If a real blocker needs a decision, state the issue briefly, recommend the best next action, and ask for one concise authorization. Offer alternatives only when they materially change risk or outcome.

@@ -251,6 +251,8 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     finalizer_run_p.add_argument("--message")
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
+    release_docs_p = sub.add_parser("release-docs", help="Prepare and verify release documentation")
+    release_docs_p.add_argument("release_docs_args", nargs=argparse.REMAINDER)
 
     plugin_p = sub.add_parser("plugin")
     plugin_sub = plugin_p.add_subparsers(dest="plugin_action", required=True)
