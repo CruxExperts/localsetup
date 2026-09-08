@@ -57,7 +57,7 @@ def _guide(record: dict[str, Any]) -> str:
     lines = ["---", "status: ACTIVE", f"version: {major_minor}", "owner_skill: ls-github-publishing-workflow", "---", "", f"# LocalSetup {record['version']}", "", record["summary"], "", "## Highlights", ""]
     lines.extend(f"- {row['text']}" for row in record["highlights"])
     lines.append("")
-    lines.extend([f"See the [published release and downloads](https://github.com/CruxExperts/localsetup/releases/tag/v{record['version']}) for release assets.", ""])
+    lines.extend([f"After publication, see the [release and downloads](https://github.com/CruxExperts/localsetup/releases/tag/v{record['version']}) for release assets.", ""])
     lines.extend(_section("Compatibility", record["compatibility"]))
     lines.extend(_section("Update", record["update"]))
     lines.extend(["For installation and source refresh, read the [quickstart update instructions](../QUICKSTART.md#update). Adapter changes follow the [adapter ownership guide](../ADAPTER_OWNERSHIP.md).", ""])

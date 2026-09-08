@@ -21,16 +21,17 @@ LocalSetup provides capability skills, executable workflow packages, explicit ad
 Start with the [quickstart](ls/docs/QUICKSTART.md) or browse the [documentation](ls/docs/README.md). The [latest published release](https://github.com/CruxExperts/localsetup/releases/latest) provides release notes and downloads.
 
 <!-- release-summary:start -->
-## What's new in 4.23.0
+## What's new in 4.25.0
 
-LocalSetup now prepares and checks release documentation before the publication workflow builds a release archive. A structured release record keeps homepage highlights, entry-page links, the release guide, and GitHub notes aligned with the planned version.
+LocalSetup adds optional executable Backblaze and Garage storage skills and release-documentation automation. Each storage skill runs independently after installation, uses explicit credentials, and defaults to a local plan with no network activity.
 
 - **Release-aware documentation:** Canonical version planning drives one checked content record and the managed current-release sections. Stale versions, rendered-content drift, broken guide links, and incorrect verification archive names block preparation.
 - **Source-backed authoring and review:** Active public documents receive static checks, with targeted editorial review against committed changes. The protected, tool-free QC runtime proposes edits and independently reviews them with bounded calls, deadlines, source receipts, and public-link preservation.
-- **Documentation-only repair:** The repair workflow can update published release prose without rebuilding packages or replacing tags and assets. It refuses to describe unreleased executable changes as part of an already published release.
-- **Preserved release history:** Version synchronization leaves historical release guides intact while refreshing the current version and generated documentation.
+- **Backblaze storage and administration:** S3 object, version, multipart, encryption, and Object Lock operations join native bucket, application-key, and notification administration. Revision-checked bucket updates send only selected fields.
+- **Garage storage and restricted administration:** S3 transfers, presigned forms, SSE-C, bucket/key permissions and aliases, quotas, and read-only health checks use an explicit allowlist. Unsupported version history, Object Lock, policies, and bucket-default encryption reject locally.
+- **Recoverable transfers and protected secrets:** Bounded retries apply to safe reads; uncertain writes require reconciliation. Multipart checkpoints bind source and destination identities, downloads preserve no-clobber or explicit overwrite backups, and new key secrets use exclusive protected files.
 
-See the [4.23.0 release guide](ls/docs/releases/4.23.0.md) for compatibility, updating, and verification.
+See the [4.25.0 release guide](ls/docs/releases/4.25.0.md) for compatibility, updating, and verification.
 <!-- release-summary:end -->
 
 The [4.4.0 guide](ls/docs/releases/4.4.0.md) remains available as release history.

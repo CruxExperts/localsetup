@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "version": "4.25.0",
+  "source_commit": "de269d70d9f14ffb485258d130c08fa74c67b145",
+  "baseline_tag": "v4.22.9",
+  "summary": "LocalSetup adds optional executable Backblaze and Garage storage skills and release-documentation automation. Each storage skill runs independently after installation, uses explicit credentials, and defaults to a local plan with no network activity.",
+  "highlights": [
+    {
+      "text": "**Release-aware documentation:** Canonical version planning drives one checked content record and the managed current-release sections. Stale versions, rendered-content drift, broken guide links, and incorrect verification archive names block preparation.",
+      "evidence": [
+        "ls/core/release_docs/checks.py",
+        "ls/core/release_docs/render.py",
+        ".github/workflows/publish.yml"
+      ]
+    },
+    {
+      "text": "**Source-backed authoring and review:** Active public documents receive static checks, with targeted editorial review against committed changes. The protected, tool-free QC runtime proposes edits and independently reviews them with bounded calls, deadlines, source receipts, and public-link preservation.",
+      "evidence": [
+        "ls/core/release_docs/agent.py",
+        "ls/core/release_docs/proposals.py",
+        "ls/core/release_docs/runtime.py"
+      ]
+    },
+    {
+      "text": "**Backblaze storage and administration:** S3 object, version, multipart, encryption, and Object Lock operations join native bucket, application-key, and notification administration. Revision-checked bucket updates send only selected fields.",
+      "evidence": [
+        "ls/skills/ls-backblaze/OPERATION_MATRIX.md",
+        "ls/skills/ls-backblaze/scripts/lib/ls_backblaze/native.py"
+      ]
+    },
+    {
+      "text": "**Garage storage and restricted administration:** S3 transfers, presigned forms, SSE-C, bucket/key permissions and aliases, quotas, and read-only health checks use an explicit allowlist. Unsupported version history, Object Lock, policies, and bucket-default encryption reject locally.",
+      "evidence": [
+        "ls/skills/ls-garage/OPERATION_MATRIX.md",
+        "ls/skills/ls-garage/scripts/lib/ls_garage/admin.py"
+      ]
+    },
+    {
+      "text": "**Recoverable transfers and protected secrets:** Bounded retries apply to safe reads; uncertain writes require reconciliation. Multipart checkpoints bind source and destination identities, downloads preserve no-clobber or explicit overwrite backups, and new key secrets use exclusive protected files.",
+      "evidence": [
+        "ls/skills/ls-backblaze/scripts/lib/ls_backblaze/transfers.py",
+        "ls/skills/ls-garage/scripts/lib/ls_garage/secret_files.py",
+        "ls/tests/test_storage_part_boundaries.py"
+      ]
+    }
+  ],
+  "compatibility": [
+    "The framework command and Python distribution remain `localsetup`. Existing adapter ownership, recorded selections, and ordinary installation/update behavior are unchanged.",
+    "Automated release preparation requires the existing QC endpoint, credential, model configuration, and a successfully provisioned protected runtime. Missing configuration, incomplete review, or failed validation stops the release path.",
+    "The storage skills are optional integrations. Each contains its own Python package and runs without the LocalSetup distribution or the other skill. Install the pinned boto3 1.43.89 SDK and locked dependencies from the shipped hashed requirements in a caller-owned Python 3.12 or newer environment; the tools never install dependencies automatically.",
+    "Garage Admin compatibility is schema-tested against the reviewed v2.3.0 OpenAPI document. This does not qualify every deployed Garage version. Garage requires explicit overwrite authorization and rejects conditional no-clobber requests; prior-version recovery is not available.",
+    "The included Garage schema retains its upstream AGPL-3.0 license, attribution, and exact source archive. Framework code licensing does not replace that schema license.",
+    "Release automation prepares a draft; complete native artifact assembly and final public publication still require the documented maintainer workflow."
+  ],
+  "update": [
+    "Follow the quickstart update instructions to refresh the registered source to the intended release. `localsetup update` reapplies that source; it does not download a newer framework release. Explicit source checkouts remain under the user's control.",
+    "Select the optional Backblaze or Garage skill through the integrations pack or individual skill selection, then follow the storage guide for explicit SDK setup, provider configuration, schemas, and local planning. Existing storage accounts and servers are not contacted during installation.",
+    "Once the registered source is current, preview the target:\n\n```bash\nlocalsetup plan --target-directory .\n```\n\nReview selections and clear blockers before applying:\n\n```bash\nlocalsetup update --target-directory .\nlocalsetup verify --level filesystem\n```",
+    "Repository maintainers should run the publish workflow's `qualify` mode before enabling the release path. Qualification integrates and validates only on its ephemeral runner, without pushing or creating a release. The versioning guide documents `release` and `repair` modes."
+  ],
+  "verification": [
+    "When this release is published, download `localsetup-v4.25.0.tar.gz`, `localsetup-v4.25.0.tar.gz.sha256`, and `localsetup-v4.25.0.tar.gz.cdx.json` together and keep all three files in the same directory.",
+    "Use `verify-release` to check the archive and its checksum and SBOM sidecars. Before publishing a draft, maintainers must also verify the complete wheel, source-distribution, and required native artifact inventory, then run the release-documentation draft check against the exact release commit.",
+    "Storage acceptance uses offline provider fixtures, locked SDK serialization/signing, adversarial transfer and secret tests, and isolated installed-skill tests. Live Backblaze and Garage provider qualification remains unperformed; opt-in live smoke checks are supplied separately."
+  ]
+}
