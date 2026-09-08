@@ -1843,7 +1843,7 @@
     },
     {
       "path": "ls/docs/_generated/plugin-packs.md",
-      "line_sha256": "1c58e7bb3e486f45f315992558a6b2bf3336b591a48fefe6fcdfe73fb0a8ff14",
+      "line_sha256": "cad225fb563b7b60c4e8ef772ef4e81159d4bb3cdca654a3103df57e5f9b3765",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
