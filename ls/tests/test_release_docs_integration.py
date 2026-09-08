@@ -11,6 +11,27 @@ from ls.core.release_docs import planning, render
 from ls.tests.versioning_test_helpers import copy_full_repo, init_git_repo, run
 
 
+def test_hosted_python_hardening_is_confined_to_setup_tool_root(tmp_path, monkeypatch):
+    from pathlib import Path
+    import yaml
+
+    workflow = yaml.safe_load((Path(__file__).resolve().parents[2] / ".github/workflows/publish.yml").read_text())
+    step = next(step for step in workflow["jobs"]["prepare-documentation"]["steps"]
+                if step["name"] == "Qualify runner-owned Python permissions")
+    script = step["run"].split("\n", 1)[1].rsplit("\nPY", 1)[0]
+    executable = tmp_path / "python"
+    executable.write_text("fixture")
+    executable.chmod(0o777)
+    monkeypatch.setattr(sys, "executable", str(executable))
+    monkeypatch.setenv("pythonLocation", str(tmp_path))
+    exec(compile(script, "runner-permissions", "exec"), {})
+    assert executable.stat().st_mode & 0o777 == 0o755
+    monkeypatch.setenv("pythonLocation", str(tmp_path / "other"))
+    (tmp_path / "other").mkdir()
+    with pytest.raises(SystemExit, match="Expected a regular"):
+        exec(compile(script, "runner-permissions", "exec"), {})
+
+
 def test_verified_baseline_precedes_the_only_document_scan(tmp_path, monkeypatch):
     from ls.core.release_docs import cli, github
     monkeypatch.setattr(github, "git", lambda *args: "a" * 40)
