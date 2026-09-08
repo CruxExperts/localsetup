@@ -18,16 +18,14 @@ Keep reusable agent skills in one managed library, expose the packages each proj
 
 LocalSetup provides capability skills, executable workflow packages, explicit adapter selection, install planning, verification, and rollback records. It supports Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Custom project skills can live beside managed packages.
 
-Start with the [quickstart](ls/docs/QUICKSTART.md), browse the [documentation](ls/docs/README.md), or read the [4.4.0 release guide](ls/docs/releases/4.4.0.md).
+Start with the [quickstart](ls/docs/QUICKSTART.md), browse the [documentation](ls/docs/README.md), or read the [current release guide](ls/docs/releases/4.22.9.md). The [latest published release](https://github.com/CruxExperts/localsetup/releases/latest) provides release notes and downloads.
 
-## What's new in 4.4
+## What's new in 4.22.9
 
-- **Focused context:** Platform templates use canonical catalogs and current-client discovery instead of repeating the package inventory. Optional templates remain distinct from installed adapters.
-- **Clear workflow ownership:** Audit, documentation, heartbeat, and transport entry points route to their owning capability packages. The generated registry lists the supported workflow packages.
-- **Cleaner managed packages:** Source materialization omits Python bytecode caches while retaining source files, hidden assets, and package data.
-- **Isolated audit execution:** Sandbox smoke commands receive an explicitly staged shared helper without inheriting host import paths.
+- **Reliable OpenCode inventory:** Ordinary package references no longer consume the directory traversal budget. Scans visit resolved directories once while retaining nested skill-conflict checks and bounded traversal.
+- **Actionable update reports:** Recorded updates identify unavailable workflow selections, name replacement owning skills where known, and distinguish unknown selections or missing replacements. Recorded selections stay intact for review.
 
-See the [release guide](ls/docs/releases/4.4.0.md) for compatibility, updating, and verification.
+See the [4.22.9 release guide](ls/docs/releases/4.22.9.md) for compatibility, updating, and verification. The [4.4.0 guide](ls/docs/releases/4.4.0.md) remains available as release history.
 
 ## The short version
 

@@ -21,7 +21,7 @@ For the public product overview, start with the [root README](../README.md). Thi
 
 LocalSetup-managed entries in consuming repositories are install output. Adapter directories may also contain project-owned skills, files, and symlinks; preserve that content in place. See [adapter ownership](docs/ADAPTER_OWNERSHIP.md).
 
-The [4.4.0 release guide](docs/releases/4.4.0.md) explains the consolidated context, workflow routing, and package-content changes.
+The [current release guide](docs/releases/4.22.9.md) explains the OpenCode inventory and recorded-update reporting fixes in 4.22.9, with update and verification instructions. Find downloads in the [latest published release](https://github.com/CruxExperts/localsetup/releases/latest).
 
 ## Install flow
 

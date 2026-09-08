@@ -28,7 +28,8 @@ This is the public documentation map for LocalSetup. Start here when you want th
 |---|---|
 | [Project README](../../README.md) | Why LocalSetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
-| [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
+| [Current release guide](releases/4.22.9.md) | OpenCode inventory and recorded-update fixes in 4.22.9, compatibility, updating, and verification. |
+| [Published releases and downloads](https://github.com/CruxExperts/localsetup/releases) | Release notes and assets; the [4.4.0 guide](releases/4.4.0.md) covers the earlier context and package consolidation. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
 | [LSCli operations](LSCLI.md) | Explicit profiles, offline runtime/command setup, protected coding, sessions, recovery, branches, compaction and tool-free completion. |
 | [LSCli runtime contracts](LSCLI_RUNTIME.md) | Grants, disclosure, sandbox resources, broker protocols, durable evidence and completion schemas. |
