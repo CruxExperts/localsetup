@@ -65,6 +65,46 @@ def test_runtime_requires_published_wheel_digest(tmp_path, monkeypatch):
     assert not (tmp_path / "inputs").exists()
 
 
+def test_runtime_installs_locked_backend_before_source_download(tmp_path, monkeypatch):
+    import hashlib
+    import io
+    import zipfile
+    from ls.core.agent import runtime_install
+
+    data = io.BytesIO()
+    with zipfile.ZipFile(data, "w") as archive:
+        for name in ("sdk-build.lock", "sdk-runtime.lock"):
+            archive.writestr("ls/config/" + name, "locked-fixture")
+    digest = hashlib.sha256(data.getvalue()).hexdigest()
+    assets = tmp_path / "inputs"
+    monkeypatch.setenv("GH_TOKEN", "private-fixture")
+    monkeypatch.setattr(runtime, "git", lambda *args: "a" * 40)
+    monkeypatch.setattr(runtime, "published_baseline", lambda *args: {"version": "1.2.3", "tag": "v1.2.3"})
+    monkeypatch.setattr(runtime, "gh_json", lambda *args: {"assets": [{
+        "name": "localsetup-1.2.3-py3-none-any.whl", "digest": "sha256:" + digest}]})
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        if command[0] == "gh":
+            (assets / "localsetup-1.2.3-py3-none-any.whl").write_bytes(data.getvalue())
+        else:
+            assert "GH_TOKEN" not in kwargs["env"]
+        return subprocess.CompletedProcess(command, 0, stderr="")
+
+    monkeypatch.setattr(runtime.subprocess, "run", run)
+    monkeypatch.setattr(runtime_install, "install", lambda *args, **kwargs: {"status": "installed"})
+    assert runtime.provision(tmp_path, tmp_path.parent / "fixture-runtime", assets, "/runner/python")["ok"]
+    backend = next(i for i, command in enumerate(commands) if "install" in command)
+    download = next(i for i, command in enumerate(commands)
+                    if "download" in command and str(assets / "sdk-runtime.lock") in command)
+    assert backend < download
+    assert "--require-hashes" in commands[backend] and "--no-index" in commands[backend]
+    assert "--python" in commands[download]
+    assert str(assets / "download-env/bin/python") in commands[download]
+    assert "--no-build-isolation" in commands[download]
+
+
 def test_real_preflight_preserves_planned_next_version(tmp_path, monkeypatch):
     """A docs preparation commit cannot shift the canonical release arithmetic."""
     repo = copy_full_repo(tmp_path)

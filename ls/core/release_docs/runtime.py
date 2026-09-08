@@ -47,10 +47,12 @@ def provision(root: Path, runtime_root: Path, assets_dir: Path, python: str) -> 
     environment = {key: value for key, value in os.environ.items()
                    if key in {"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "TMPDIR"}}
     environment.update(PIP_CONFIG_FILE=os.devnull, PIP_NO_INPUT="1",
-                       PIP_DISABLE_PIP_VERSION_CHECK="1", PIP_CACHE_DIR=str(assets_dir / "pip-cache"))
+                       PIP_DISABLE_PIP_VERSION_CHECK="1", PIP_CACHE_DIR=str(assets_dir / "pip-cache"),
+                       UV_CACHE_DIR=str(assets_dir / "uv-cache"), UV_PYTHON_DOWNLOADS="never")
+    pip = [python, "-m", "pip"]
     for name in ("sdk-build.lock", "sdk-runtime.lock"):
         print(json.dumps({"stage": "download", "lock": name}), flush=True)
-        result = subprocess.run([python, "-m", "pip", "download", "--disable-pip-version-check",
+        result = subprocess.run([*pip, "download", "--disable-pip-version-check",
                         "--require-hashes", "--no-deps", "--no-build-isolation",
                         "--dest", str(wheelhouse), "-r", str(assets_dir / name)],
                        cwd=assets_dir, check=False, timeout=300, stdout=subprocess.DEVNULL,
@@ -66,6 +68,21 @@ def provision(root: Path, runtime_root: Path, assets_dir: Path, python: str) -> 
                     reason = label
                     break
             raise ValueError(f"{name}: {reason} (exit {result.returncode})")
+        if name == "sdk-build.lock":
+            # pip prepares source-only dependency metadata even for download.
+            # Supply its backend from the verified build lock in a private venv,
+            # never from unpinned build isolation or the runner's global Python.
+            download_env = assets_dir / "download-env"
+            print(json.dumps({"stage": "prepare-locked-build-backend"}), flush=True)
+            subprocess.run(["uv", "--no-config", "venv", "--offline", "--python", python,
+                            str(download_env)], cwd=assets_dir, check=True, timeout=60,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=environment)
+            pip += ["--python", str(download_env / "bin/python")]
+            subprocess.run([*pip, "install", "--no-index", "--find-links", str(wheelhouse),
+                            "--require-hashes", "--only-binary", ":all:", "--no-deps",
+                            "-r", str(assets_dir / name)], cwd=assets_dir, check=True,
+                           timeout=120, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           env=environment)
     print(json.dumps({"stage": "install-protected-runtime"}), flush=True)
     result = install(runtime_root, wheel, digest, wheelhouse, root, timeout=300)
     return {"ok": True, "baseline": baseline, "wheel_sha256": digest,
