@@ -100,7 +100,7 @@ The public command is release-backed even though the small wrapper is downloaded
 
 When raw managed bootstrap finds a clean legacy managed source checkout identified by `_localsetup/tools/localsetup.py`, it recognizes and refreshes that checkout to the release-backed modern layout with `ls/tools/localsetup.py`. Before fetching and replacing the checkout, LocalSetup stores a Git rollback bundle and JSON manifest outside the source checkout under `<source-parent>/state/source-migrations` when that location is external, or `~/.local/share/localsetup/state/source-migrations` otherwise. Dirty or untracked source checkouts remain rejected before refresh.
 
-For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
+For release verification, download the GitHub release tarball with its `.sha256` checksum and `.cdx.json` SBOM sidecars into the same directory and run:
 
 ```bash
 uv run --locked python ls/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
