@@ -53,7 +53,7 @@ def test_copy_and_multipart_wire_params(monkeypatch: pytest.MonkeyPatch, tmp_pat
     s3.execute("UploadPart", {"bucket": "example.bucket", "key": "target", "upload_id": "upload", "part_number": 1, "source": str(source)}, {})
     name, params = client.calls.pop()
     assert name == "upload_part"
-    assert {key: value for key, value in params.items() if key != "Body"} == {"Bucket": "example.bucket", "Key": "target", "UploadId": "upload", "PartNumber": 1}
+    assert {key: value for key, value in params.items() if key != "Body"} == {"Bucket": "example.bucket", "Key": "target", "UploadId": "upload", "PartNumber": 1, "ContentLength": 4}
 
 
 def test_malformed_mutation_response_is_unknown(monkeypatch: pytest.MonkeyPatch) -> None:

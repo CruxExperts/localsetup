@@ -4608,6 +4608,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Stable vendored SDK filesystem identifier used by upstream document ownership verification; this exact path segment or diagnostic fixture is not product display text."
+    },
+    {
+      "path": "ls/tests/test_s3_sdk_exports.py",
+      "line_sha256": "eadb285963da42cc11c7c8c83851a439ff9909ccce5bb16d9a2399321ccf07b3",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Assert the optional standalone SDK export excludes the existing framework distribution identifier; exact package spelling is part of the test."
     }
   ],
   "visual_reviews": [
@@ -4644,5 +4652,11 @@
       "reviewed_at": "2026-09-05"
     }
   ],
-  "binary_reviews": []
+  "binary_reviews": [
+    {
+      "path": "ls/skills/ls-garage/references/upstream-admin-api-v2.json.gz",
+      "sha256": "006bb13d53429a8c043b0286447c12619ee0a9f9995a26ceec96c4d81b6fb8c3",
+      "reason": "Nonvisual deterministic gzip archive of the exact licensed Garage Admin OpenAPI JSON source; decompression and source SHA-256 verified by test_storage_admin_schema_source.py."
+    }
+  ]
 }

@@ -182,10 +182,24 @@ def _execute_once(name: str, args: dict[str, Any], values: dict[str, Any]) -> di
             _encryption(params, args.get("encryption")); _encryption(params, args.get("source_encryption"), source=True)
             return _response(name, client.copy_object(**params))
         if name == "UploadPart":
+            from .transfers import FileRange, _stat
             source = Path(args["source"])
-            if not source.is_file(): raise ToolError("source_missing", "source must be a regular file")
-            params = _params(args); _encryption(params, args.get("encryption"), customer_only=True)
-            with source.open("rb") as stream: return _response(name, client.upload_part(Body=stream, **params))
+            try:
+                stream = source.open("rb")
+            except OSError as exc:
+                raise ToolError("source_missing", "part source cannot be opened") from exc
+            with stream:
+                before = os.fstat(stream.fileno())
+                if not stat.S_ISREG(before.st_mode) or before.st_size > 5 * 1024**3:
+                    raise ToolError("source_invalid", "part source must be a regular file no larger than 5 GiB")
+                request = _params(args)
+                request.update(ContentLength=before.st_size, Body=FileRange(stream, 0, before.st_size))
+                request.update(encryption_parameters(args.get("encryption"), customer_only=True))
+                response = _response(name, client.upload_part(**request))
+                if _stat(before) != _stat(os.fstat(stream.fileno())):
+                    return {"partial": True, "etag": response["ETag"], "upload_id": args["upload_id"],
+                            "reconciliation": "source changed during upload; inspect ListParts before completing or uploading another part"}
+                return response
         if name == "UploadPartCopy":
             params = {"Bucket": args["bucket"], "Key": args["key"], "UploadId": args["upload_id"], "PartNumber": args["part_number"], "CopySource": {"Bucket": args["source_bucket"], "Key": args["source_key"]}}
             if args.get("source_range"): params["CopySourceRange"] = args["source_range"]

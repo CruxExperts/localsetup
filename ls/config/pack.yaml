@@ -138,6 +138,7 @@ packs:
   - ls-email-sequence-builder
   - ls-firebase-hosting-basics
   - ls-firecrawl
+  - ls-garage
   - ls-github-starredrepos
   - ls-keepass-secrets
   - ls-mail-protocol-control
@@ -513,6 +514,14 @@ extensions:
       sort_priority: 50
       tags:
       - backblaze
+      - storage
+      - s3
+      owner_scope: skill
+    ls-garage:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - garage
       - storage
       - s3
       owner_scope: skill
