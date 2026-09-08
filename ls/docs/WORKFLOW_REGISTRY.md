@@ -4,10 +4,10 @@ version: 4.23
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 200f37e1c02bbb4a00b180da4616ef2dc5a36499d664c43bfc06660a6b5516cd
+  source_provenance_hash: e3022768e32605862a10db3af659f2cdbb0db38eb2365261e257b4c8dcef9c61
   emitter: generate-docs
 framework_version: 4.23.0
-source_commit: caee0071eff848726191b59d3aca78408ab1ca01
+source_commit: 1fe81de10c43f7358823e1fd39713202cdd23207
 artifact_sha256: 0ea64e783734c965d1053fedd56662e811641bc682a5f89cbca420b9bf576a6a
 ---
 # Workflow and module registry (LocalSetup)
