@@ -17,6 +17,18 @@ import zipfile
 from .github import gh_json, published_baseline, git
 
 
+INSTALL_FAILURES = {
+    "Host interpreter is not a trusted regular executable": "untrusted-host-interpreter",
+    "Unexpected installed runtime symlink": "unexpected-runtime-symlink",
+    "Installed runtime entry is writable by other users": "unsafe-runtime-entry-mode",
+    "Installed runtime entry is not owned by the current user": "unsafe-runtime-entry-owner",
+    "Runtime environment root has unsafe ownership or permissions": "unsafe-runtime-root",
+    "Runtime root must be user-owned and not writable by other users": "unsafe-runtime-owner",
+    "Installed runtime contains a special or hardlinked file": "nonregular-runtime-file",
+    "Runtime path must contain only directories, without symlinks": "symlink-runtime-parent",
+}
+
+
 def provision(root: Path, runtime_root: Path, assets_dir: Path, python: str) -> dict:
     from ..agent.runtime_install import install
 
@@ -102,7 +114,7 @@ def main() -> int:
         return 0
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError, KeyError) as exc:
         # Only our fixed download classifications are safe outward diagnostics.
-        detail = str(exc) if re.fullmatch(r"sdk-(?:build|runtime)\.lock: [a-z ]+ \(exit [0-9]+\)", str(exc)) else type(exc).__name__
+        detail = str(exc) if re.fullmatch(r"sdk-(?:build|runtime)\.lock: [a-z ]+ \(exit [0-9]+\)", str(exc)) else INSTALL_FAILURES.get(str(exc), type(exc).__name__)
         print(json.dumps({"ok": False, "reason": "Protected runtime provisioning failed", "detail": detail}))
         return 1
 
