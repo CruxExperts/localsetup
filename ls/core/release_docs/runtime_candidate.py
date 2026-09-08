@@ -21,8 +21,8 @@ def build_candidate(root: Path, assets: Path, baseline_wheel: Path,
     output.mkdir(mode=0o700)
     subprocess.run(["uv", "--no-config", "build", "--wheel", "--offline",
                     "--no-build-isolation", "--python", python,
-                    "--config-settings", "--global-option=build",
-                    "--config-settings", "--global-option=--build-base=" + str(assets / "build"),
+                    "--config-settings=--global-option=build",
+                    "--config-settings=--global-option=--build-base=" + str(assets / "build"),
                     "--out-dir", str(output)], cwd=root, env=environment,
                    check=True, timeout=180, stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)

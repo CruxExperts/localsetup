@@ -35,8 +35,8 @@ def test_candidate_wheel_binding(tmp_path, monkeypatch, mutation):
         if command[0] != "uv":
             return original_run(command, **kwargs)
         assert "--offline" in command and "--no-build-isolation" in command
-        assert "--global-option=build" in command
-        assert "--global-option=--build-base=" + str(assets / "build") in command
+        assert "--config-settings=--global-option=build" in command
+        assert "--config-settings=--global-option=--build-base=" + str(assets / "build") in command
         assert command[command.index("--python") + 1] == "/locked/python"
         with zipfile.ZipFile(assets / "candidate-wheel/candidate.whl", "w") as archive:
             archive.writestr("ls/_sdk_payload/manifest.json", "changed" if mutation == "sdk" else "sdk-fixture")
