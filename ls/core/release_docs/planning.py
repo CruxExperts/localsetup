@@ -105,11 +105,12 @@ def plan(root: Path, base: str | None = None, head: str = "HEAD", repair: bool =
     all_changed = _changed_paths(repo_root, source_base, source_head)
     generated_paths = [path for path in all_changed if is_generated_output_path(path)]
     changed_paths = [path for path in all_changed if path not in generated_paths]
+    contents = {document: _committed_text(repo_root, source_head, document) for document in documents}
     affected: dict[str, list[str]] = {}
     for changed_path in changed_paths:
         matches = [
             document for document in documents
-            if _matches_document(document, _committed_text(repo_root, str(version_plan["head"]), document), changed_path)
+            if _matches_document(document, contents[document], changed_path)
         ]
         if changed_path in documents and changed_path not in matches:
             matches.append(changed_path)

@@ -91,7 +91,7 @@ def test_record_rejects_unsafe_evidence_and_bad_baseline_tag(repo: Path) -> None
         validate_record(malformed)
 
 
-def test_inventory_and_plan_use_tracked_committed_sources(repo: Path) -> None:
+def test_inventory_and_plan_use_tracked_committed_sources(repo: Path, monkeypatch) -> None:
     (repo / "ls/core/release_feature.py").write_text("VALUE = 1\n")
     (repo / "ls/tests/test_release_feature.py").write_text("def test_value(): assert True\n")
     git(repo, "add", "ls/core/release_feature.py", "ls/tests/test_release_feature.py")
@@ -104,7 +104,15 @@ def test_inventory_and_plan_use_tracked_committed_sources(repo: Path) -> None:
     assert "docs/private.md" not in documents
     assert "AGENTS.md" not in documents
     assert "ls/docs/releases/4.3.0.md" not in documents
+    from ls.core.release_docs import planning
+    original_read = planning._committed_text
+    reads = []
+    def counted_read(root, ref, path):
+        reads.append(path)
+        return original_read(root, ref, path)
+    monkeypatch.setattr(planning, "_committed_text", counted_read)
     result = plan(repo, base="v4.4.0")
+    assert reads.count("ls/docs/ACTIVE.md") == 1
     assert result["target_version"] == "4.4.1"
     assert result["source_commit"] == git(repo, "rev-parse", "HEAD")
     assert {row["path"] for row in result["source_material"]} == set(result["changed_paths"])

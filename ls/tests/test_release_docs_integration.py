@@ -11,6 +11,20 @@ from ls.core.release_docs import planning, render
 from ls.tests.versioning_test_helpers import copy_full_repo, init_git_repo, run
 
 
+def test_verified_baseline_precedes_the_only_document_scan(tmp_path, monkeypatch):
+    from ls.core.release_docs import cli, github
+    monkeypatch.setattr(github, "git", lambda *args: "a" * 40)
+    monkeypatch.setattr(github, "published_baseline", lambda *args: {
+        "commit": "b" * 40, "tag": "v1.2.3", "version": "1.2.3"})
+    calls = []
+    def planned(root, **kwargs):
+        calls.append(kwargs["base"])
+        return {"ok": True, "source_commit": "a" * 40, "target_version": "1.3.0"}
+    monkeypatch.setattr(planning, "plan", planned)
+    assert cli.main(["--repo-root", str(tmp_path), "plan", "--verify-baseline"]) == 0
+    assert calls == ["b" * 40]
+
+
 def test_validation_failure_stops_before_push(tmp_path, monkeypatch):
     evidence = tmp_path / "candidate.json"
     evidence.write_text(json.dumps({"plan": {"source_commit": "a" * 40}, "candidate": {}}))

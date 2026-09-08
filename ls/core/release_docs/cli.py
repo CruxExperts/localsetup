@@ -30,14 +30,16 @@ def main(argv: list[str] | None = None) -> int:
         from .github import git, published_baseline, check_draft, guard_repair
 
         if args.action in ("plan", "prepare", "apply"):
-            payload = plan(root, base=args.base, head=args.head, repair=args.repair)
+            baseline = None
             if args.verify_baseline:
-                baseline = published_baseline(root, payload["source_commit"])
+                baseline = published_baseline(root, git(root, "rev-parse", args.head))
+            payload = plan(root, base=baseline["commit"] if baseline else args.base,
+                           head=args.head, repair=args.repair)
+            if baseline:
                 if args.repair and baseline["version"] != payload["target_version"]:
                     raise ValueError("Repair must target the current published release version")
                 if args.repair:
                     guard_repair(root, baseline, payload["source_commit"])
-                payload = plan(root, base=baseline["commit"], head=args.head, repair=args.repair)
                 if not args.repair:
                     payload["baseline_tag"] = baseline["tag"]
                 payload["published_baseline"] = baseline
